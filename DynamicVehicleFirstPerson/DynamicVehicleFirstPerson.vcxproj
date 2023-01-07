@@ -112,7 +112,6 @@
     <ClCompile Include="..\thirdparty\GTAVMenuBase\menusettings.cpp" />
     <ClCompile Include="..\thirdparty\GTAVMenuBase\menuutils.cpp" />
     <ClCompile Include="DllMain.cpp" />
-    <ClCompile Include="ImageDimensions.cpp" />
     <ClCompile Include="FPVScript.cpp" />
     <ClCompile Include="Script.cpp" />
     <ClCompile Include="FPVMenu.cpp" />
@@ -136,7 +135,6 @@
     <ClInclude Include="..\thirdparty\ScriptHookV_SDK\inc\types.h" />
     <ClInclude Include="..\thirdparty\simpleini\SimpleIni.h" />
     <ClInclude Include="Constants.hpp" />
-    <ClInclude Include="ImageDimensions.hpp" />
     <ClInclude Include="FPVScript.hpp" />
     <ClInclude Include="Script.hpp" />
     <ClInclude Include="ScriptMenu.hpp" />

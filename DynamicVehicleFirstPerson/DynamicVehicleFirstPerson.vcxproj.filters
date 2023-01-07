@@ -14,9 +14,6 @@
     </ClCompile>
     <ClCompile Include="FPVMenu.cpp" />
     <ClCompile Include="FPVScript.cpp" />
-    <ClCompile Include="ImageDimensions.cpp">
-      <Filter>Util</Filter>
-    </ClCompile>
     <ClCompile Include="..\thirdparty\GTAVMenuBase\menu.cpp">
       <Filter>ThirdParty\GTAVMenuBase</Filter>
     </ClCompile>
@@ -50,9 +47,6 @@
     <ClInclude Include="ScriptMenu.hpp" />
     <ClInclude Include="Constants.hpp" />
     <ClInclude Include="FPVScript.hpp" />
-    <ClInclude Include="ImageDimensions.hpp">
-      <Filter>Util</Filter>
-    </ClInclude>
     <ClInclude Include="..\thirdparty\GTAVMenuBase\InstructionalButton.h">
       <Filter>ThirdParty\GTAVMenuBase</Filter>
     </ClInclude>

@@ -37,6 +37,13 @@
     <ClCompile Include="Util\Strings.cpp">
       <Filter>Util</Filter>
     </ClCompile>
+    <ClCompile Include="ScriptSettings.cpp" />
+    <ClCompile Include="Util\AddonSpawnerCache.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="Util\ScriptUtils.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Script.hpp" />
@@ -97,6 +104,13 @@
     <ClInclude Include="Config.hpp" />
     <ClInclude Include="SettingsCommon.hpp" />
     <ClInclude Include="Util\Strings.hpp">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="ScriptSettings.hpp" />
+    <ClInclude Include="Util\AddonSpawnerCache.hpp">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Util\ScriptUtils.hpp">
       <Filter>Util</Filter>
     </ClInclude>
   </ItemGroup>

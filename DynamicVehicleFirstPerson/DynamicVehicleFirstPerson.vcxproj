@@ -116,9 +116,12 @@
     <ClCompile Include="FPVScript.cpp" />
     <ClCompile Include="Script.cpp" />
     <ClCompile Include="FPVMenu.cpp" />
+    <ClCompile Include="ScriptSettings.cpp" />
     <ClCompile Include="SettingsCommon.cpp" />
+    <ClCompile Include="Util\AddonSpawnerCache.cpp" />
     <ClCompile Include="Util\Logger.cpp" />
     <ClCompile Include="Util\Paths.cpp" />
+    <ClCompile Include="Util\ScriptUtils.cpp" />
     <ClCompile Include="Util\Strings.cpp" />
     <ClCompile Include="Util\UI.cpp" />
   </ItemGroup>
@@ -142,9 +145,12 @@
     <ClInclude Include="FPVScript.hpp" />
     <ClInclude Include="Script.hpp" />
     <ClInclude Include="ScriptMenu.hpp" />
+    <ClInclude Include="ScriptSettings.hpp" />
     <ClInclude Include="SettingsCommon.hpp" />
+    <ClInclude Include="Util\AddonSpawnerCache.hpp" />
     <ClInclude Include="Util\Logger.hpp" />
     <ClInclude Include="Util\Paths.hpp" />
+    <ClInclude Include="Util\ScriptUtils.hpp" />
     <ClInclude Include="Util\Strings.hpp" />
     <ClInclude Include="Util\UI.hpp" />
   </ItemGroup>

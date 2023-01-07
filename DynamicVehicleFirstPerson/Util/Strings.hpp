@@ -73,4 +73,24 @@ namespace StrUtil {
 
     // Convert an UTF8 string to a wide Unicode String
     std::wstring Utf8Decode(const std::string& str);
+
+    // trim from start (in place)
+    void Ltrim(std::string& s);
+
+    // trim from end (in place)
+    void Rtrim(std::string& s);
+
+    // trim from both ends (in place)
+    void Trim(std::string& s);
+
+    // trim from start (copying)
+    std::string LtrimCopy(std::string s);
+
+    // trim from end (copying)
+    std::string RtrimCopy(std::string s);
+
+    // trim from both ends (copying)
+    std::string TrimCopy(std::string s);
+
+    bool Strcmpwi(std::string a, std::string b);
 }

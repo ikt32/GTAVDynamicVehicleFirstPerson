@@ -32,6 +32,11 @@
     <ClCompile Include="..\thirdparty\GTAVMenuBase\menuutils.cpp">
       <Filter>ThirdParty\GTAVMenuBase</Filter>
     </ClCompile>
+    <ClCompile Include="Config.cpp" />
+    <ClCompile Include="SettingsCommon.cpp" />
+    <ClCompile Include="Util\Strings.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Script.hpp" />
@@ -88,6 +93,11 @@
     </ClInclude>
     <ClInclude Include="..\thirdparty\simpleini\SimpleIni.h">
       <Filter>ThirdParty\simpleini</Filter>
+    </ClInclude>
+    <ClInclude Include="Config.hpp" />
+    <ClInclude Include="SettingsCommon.hpp" />
+    <ClInclude Include="Util\Strings.hpp">
+      <Filter>Util</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

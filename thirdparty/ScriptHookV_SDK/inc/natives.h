@@ -4239,10 +4239,10 @@ namespace PED
     static int SET_PED_PRELOAD_PROP_DATA(Ped ped, int componentId, int drawableId, int TextureId) { return invoke<int>(0x2B16A3BFF1FBCE49, ped, componentId, drawableId, TextureId); } // 0x2B16A3BFF1FBCE49 0xC0E23671 b323
     static BOOL HAS_PED_PRELOAD_PROP_DATA_FINISHED(Ped ped) { return invoke<BOOL>(0x784002A632822099, ped); } // 0x784002A632822099 0x3B0CA391 b323
     static void RELEASE_PED_PRELOAD_PROP_DATA(Ped ped) { invoke<int>(0xF79F9DEF0AADE61A, ped); } // 0xF79F9DEF0AADE61A 0xFD103BA7 b323
-    static int GET_PED_PROP_INDEX(Ped ped, int componentId, Any p2) { return invoke<int>(0x898CC20EA75BACD8, ped, componentId, p2); } // 0x898CC20EA75BACD8 0x746DDAC0 b323
-    static void SET_PED_PROP_INDEX(Ped ped, int componentId, int drawableId, int TextureId, BOOL attach, Any p5) { invoke<int>(0x93376B65A266EB5F, ped, componentId, drawableId, TextureId, attach, p5); } // 0x93376B65A266EB5F 0x0829F2E2 b323
+    static int GET_PED_PROP_INDEX(Ped ped, int componentId) { return invoke<int>(0x898CC20EA75BACD8, ped, componentId); } // 0x898CC20EA75BACD8 0x746DDAC0 b323
+    static void SET_PED_PROP_INDEX(Ped ped, int componentId, int drawableId, int TextureId, BOOL attach) { invoke<int>(0x93376B65A266EB5F, ped, componentId, drawableId, TextureId, attach); } // 0x93376B65A266EB5F 0x0829F2E2 b323
     static void KNOCK_OFF_PED_PROP(Ped ped, BOOL p1, BOOL p2, BOOL p3, BOOL p4) { invoke<int>(0x6FD7816A36615F48, ped, p1, p2, p3, p4); } // 0x6FD7816A36615F48 0x08D8B180 b323
-    static void CLEAR_PED_PROP(Ped ped, int propId, Any p2) { invoke<int>(0x0943E5B8E078E76E, ped, propId, p2); } // 0x0943E5B8E078E76E 0x2D23D743 b323
+    static void CLEAR_PED_PROP(Ped ped, int propId) { invoke<int>(0x0943E5B8E078E76E, ped, propId); } // 0x0943E5B8E078E76E 0x2D23D743 b323
     static void CLEAR_ALL_PED_PROPS(Ped ped, Any p1) { invoke<int>(0xCD8A7537A9B52F06, ped, p1); } // 0xCD8A7537A9B52F06 0x81DF8B43 b323
     static void DROP_AMBIENT_PROP(Ped ped) { invoke<int>(0xAFF4710E2A0A6C12, ped); } // 0xAFF4710E2A0A6C12 0x728D3D53 b323
     static int GET_PED_PROP_TEXTURE_INDEX(Ped ped, int componentId) { return invoke<int>(0xE131A28626F81AB2, ped, componentId); } // 0xE131A28626F81AB2 0x922A6653 b323

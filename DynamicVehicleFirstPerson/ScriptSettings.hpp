@@ -13,6 +13,11 @@ public:
         bool Enable = true;
     } Main;
 
+    struct {
+        bool DisableRemoveHead = false;
+        bool DisableRemoveProps = false;
+    } Debug;
+
 private:
     std::string mSettingsFile;
 };

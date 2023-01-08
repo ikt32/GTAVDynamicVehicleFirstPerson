@@ -111,6 +111,7 @@
     <ClCompile Include="..\thirdparty\GTAVMenuBase\menumemutils.cpp" />
     <ClCompile Include="..\thirdparty\GTAVMenuBase\menusettings.cpp" />
     <ClCompile Include="..\thirdparty\GTAVMenuBase\menuutils.cpp" />
+    <ClCompile Include="Compatibility.cpp" />
     <ClCompile Include="Config.cpp" />
     <ClCompile Include="DllMain.cpp" />
     <ClCompile Include="FPVScript.cpp" />
@@ -124,6 +125,7 @@
     <ClCompile Include="Util\Paths.cpp" />
     <ClCompile Include="Util\ScriptUtils.cpp" />
     <ClCompile Include="Util\Strings.cpp" />
+    <ClCompile Include="Util\Timer.cpp" />
     <ClCompile Include="Util\UI.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -141,8 +143,10 @@
     <ClInclude Include="..\thirdparty\ScriptHookV_SDK\inc\natives.h" />
     <ClInclude Include="..\thirdparty\ScriptHookV_SDK\inc\types.h" />
     <ClInclude Include="..\thirdparty\simpleini\SimpleIni.h" />
+    <ClInclude Include="Compatibility.hpp" />
     <ClInclude Include="Config.hpp" />
     <ClInclude Include="Constants.hpp" />
+    <ClInclude Include="Enums.hpp" />
     <ClInclude Include="FPVMenuUtils.hpp" />
     <ClInclude Include="FPVScript.hpp" />
     <ClInclude Include="Script.hpp" />
@@ -154,6 +158,7 @@
     <ClInclude Include="Util\Paths.hpp" />
     <ClInclude Include="Util\ScriptUtils.hpp" />
     <ClInclude Include="Util\Strings.hpp" />
+    <ClInclude Include="Util\Timer.hpp" />
     <ClInclude Include="Util\UI.hpp" />
   </ItemGroup>
   <ItemGroup>

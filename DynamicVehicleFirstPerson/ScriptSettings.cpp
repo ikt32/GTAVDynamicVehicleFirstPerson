@@ -29,6 +29,8 @@ void CScriptSettings::Load() {
     CHECK_LOG_SI_ERROR(result, "load");
 
     LOAD_VAL("Main", "Enable", Main.Enable);
+    LOAD_VAL("Debug", "DisableRemoveHead", Debug.DisableRemoveHead);
+    LOAD_VAL("Debug", "DisableRemoveProps", Debug.DisableRemoveProps);
 }
 
 void CScriptSettings::Save() {
@@ -38,6 +40,8 @@ void CScriptSettings::Save() {
     CHECK_LOG_SI_ERROR(result, "load");
 
     SAVE_VAL("Main", "Enable", Main.Enable);
+    SAVE_VAL("Debug", "DisableRemoveHead", Debug.DisableRemoveHead);
+    SAVE_VAL("Debug", "DisableRemoveProps", Debug.DisableRemoveProps);
 
     result = ini.SaveFile(mSettingsFile.c_str());
     CHECK_LOG_SI_ERROR(result, "save");

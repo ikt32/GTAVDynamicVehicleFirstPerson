@@ -11,6 +11,7 @@ public:
     CFPVScript(const std::shared_ptr<CScriptSettings>& settings, std::vector<CConfig>& configs);
     ~CFPVScript() = default;
     void Tick();
+    void Cancel();
 
     CConfig* ActiveConfig() {
         return mActiveConfig;

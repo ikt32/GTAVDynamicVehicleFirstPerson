@@ -12,7 +12,18 @@
 #include <inc/natives.h>
 
 namespace {
-    // Stateful menu stuff, if required
+    // Keep in sync with EMountPoint
+    std::vector<std::string> mountPointNames{
+        "Vehicle",
+        "Driver"
+    };
+
+    // See SHorizonLock::PitchMode
+    const std::vector<std::string> PitchModeNames{
+        "Horizon",
+        "Vehicle",
+        "Dynamic"
+    };
 }
 
 std::vector<CScriptMenu<CFPVScript>::CSubmenu> FPV::BuildMenu() {
@@ -50,15 +61,15 @@ std::vector<CScriptMenu<CFPVScript>::CSubmenu> FPV::BuildMenu() {
                     nullptr, onRight, onLeft, "Camera info",
                     { "Switch cameras for different viewpoints." });
 
-                mbCtx.MenuOption("Manage cameras", "cammanagemenu",
+                mbCtx.MenuOption("Manage cameras", "cam.manage.menu",
                     { "No config is active, camera management unavailable." });
             }
 
-            mbCtx.MenuOption("Manage configs", "cfgmanagemenu",
+            mbCtx.MenuOption("Manage configs", "cfg.manage.menu",
                 { "Create a new config or view other configs." });
         });
 
-    submenus.emplace_back("cfgmanagemenu",
+    submenus.emplace_back("cfg.manage.menu",
         [](NativeMenu::Menu& mbCtx, CFPVScript& context) {
             mbCtx.Title("Configs");
             mbCtx.Subtitle("");
@@ -102,6 +113,430 @@ std::vector<CScriptMenu<CFPVScript>::CSubmenu> FPV::BuildMenu() {
                     CreateConfig(newConfig, vehicle);
                 }
             }
+        });
+
+    submenus.emplace_back("cam.manage.menu",
+        [](NativeMenu::Menu& mbCtx, CFPVScript& context) {
+            mbCtx.Title("Camera settings");
+            CConfig* config = context.ActiveConfig();
+            mbCtx.Subtitle(std::format("Current: {}", config ? config->Name : "None"));
+            if (config == nullptr) {
+                mbCtx.Option("No active vehicle/configuration");
+                return;
+            }
+            if (config->CamIndex >= config->Mount.size()) {
+                mbCtx.Option("~r~Error: CamIndex >= Mount.size()");
+                return;
+            }
+            CConfig::SCameraSettings& cam = config->Mount[config->CamIndex];
+
+            int mountInt = static_cast<int>(cam.MountPoint);
+            if (mbCtx.StringArray("Attach to", mountPointNames, mountInt,
+                { "Mounting to the vehicle is pretty static and predictable.",
+                  "Mounting to the driver transmit all their animations." })) {
+                cam.MountPoint = static_cast<CConfig::EMountPoint>(mountInt);
+
+                // it'll re-acquire next tick with the correct position.
+                context.Cancel();
+            }
+
+            mbCtx.FloatOptionCb("Field of view", cam.FOV, 1.0f, 120.0f, 0.5f, FPV::GetKbEntryFloat,
+                { "In degrees." });
+
+            mbCtx.FloatOptionCb("Offset height", cam.OffsetHeight, -2.0f, 2.0f, 0.01f, FPV::GetKbEntryFloat,
+                { "Distance in meters." });
+
+            mbCtx.FloatOptionCb("Offset forward", cam.OffsetForward, -2.0f, 2.0f, 0.01f, FPV::GetKbEntryFloat,
+                { "Distance in meters." });
+
+            mbCtx.FloatOptionCb("Offset side", cam.OffsetSide, -2.0f, 2.0f, 0.01f, FPV::GetKbEntryFloat,
+                { "Distance in meters." });
+
+            mbCtx.FloatOptionCb("Pitch", cam.Pitch, -20.0f, 20.0f, 0.1f, FPV::GetKbEntryFloat,
+                { "In degrees." });
+
+            mbCtx.MenuOption("Looking options", "look.menu",
+                { "Adjust mouse/controller sensitivity." });
+
+            mbCtx.MenuOption("Camera inertia options", "inertia.menu",
+                { "Modify camera inertia and movement." });
+
+            mbCtx.MenuOption("Horizon lock options", "horizon.menu",
+                { "Modify horizon lock." });
+
+            mbCtx.MenuOption("Depth of field options", "dof.menu",
+                { "Modify depth of field effects." });
+        });
+
+    submenus.emplace_back("look.menu",
+        [](NativeMenu::Menu& mbCtx, CFPVScript& context) {
+            mbCtx.Title("Looking");
+            CConfig* config = context.ActiveConfig();
+            mbCtx.Subtitle(std::format("Current: {}", config ? config->Name : "None"));
+            if (config == nullptr) {
+                mbCtx.Option("No active vehicle/configuration");
+                return;
+            }
+            if (config->CamIndex >= config->Mount.size()) {
+                mbCtx.Option("~r~Error: CamIndex >= Mount.size()");
+                return;
+            }
+            CConfig::SCameraSettings& cam = config->Mount[config->CamIndex];
+
+            mbCtx.FloatOptionCb("Controller smoothing", config->Look.LookTime, 0.0f, 0.5f, 0.000001f, GetKbEntryFloat,
+                { "How smooth the camera moves.", "Press enter to enter a value manually. Range: 0.0 to 0.5." });
+
+            mbCtx.FloatOptionCb("Mouse sensitivity", config->Look.MouseSensitivity, 0.05f, 2.0f, 0.05f, GetKbEntryFloat);
+
+            mbCtx.FloatOptionCb("Mouse smoothing", config->Look.MouseLookTime, 0.0f, 0.5f, 0.000001f, GetKbEntryFloat,
+                { "How smooth the camera moves.", "Press enter to enter a value manually. Range: 0.0 to 0.5." });
+
+            mbCtx.IntOptionCb("Mouse center timeout", config->Look.MouseCenterTimeout, 0, 120000, 500, FPV::GetKbEntryInt,
+                { "Milliseconds before centering the camera after looking with the mouse." });
+        });
+
+    submenus.emplace_back("inertia.menu",
+        [](NativeMenu::Menu& mbCtx, CFPVScript& context) {
+            mbCtx.Title("Inertia & movement");
+            CConfig* config = context.ActiveConfig();
+            mbCtx.Subtitle(std::format("Current: {}", config ? config->Name : "None"));
+            if (config == nullptr) {
+                mbCtx.Option("No active vehicle/configuration");
+                return;
+            }
+            if (config->CamIndex >= config->Mount.size()) {
+                mbCtx.Option("~r~Error: CamIndex >= Mount.size()");
+                return;
+            }
+            CConfig::SMovement& movement = config->Mount[config->CamIndex].Movement;
+
+            if (mbCtx.BoolOption("Enable inertia & movement", movement.Follow,
+                { "Enable to allow the camera to rotate and move around in response to physics.",
+                  "When disabled, camera is rigidly mounted to vehicle or driver." })) {
+                context.Cancel();
+            }
+
+            mbCtx.MenuOption("Rotation", "inertia.rot.menu",
+                { "Options for how vehicle movement affects the camera.",
+                  "Affects camera yaw." });
+
+            mbCtx.MenuOption("Inertia: Longitudinal", "inertia.long.menu",
+                { "Options for how acceleration affect the camera.",
+                  "Affects camera pitch and forward/backward movement." });
+
+            mbCtx.MenuOption("Inertia: Lateral", "inertia.lat.menu",
+                { "Options for how sideways acceleration affects the camera.",
+                  "Affects camera left/right movement." });
+
+            mbCtx.MenuOption("Inertia: Vertical", "inertia.vert.menu",
+                { "Options for how vertical acceleration affects the camera.",
+                  "Affects camera up/down movement." });
+
+            mbCtx.FloatOptionCb("Movement roughness", movement.Roughness, 0.0f, 10.0f, 0.5f, GetKbEntryFloat,
+                { "How rough the camera movement is, from inertia effects.",
+                  "Larger values increase roughness, causing smaller bumps to be more noticeable.",
+                  "Smaller values increase smoothness, but may cause the movement to be less responsive." });
+        });
+
+    submenus.emplace_back("inertia.rot.menu",
+        [](NativeMenu::Menu& mbCtx, CFPVScript& context) {
+            mbCtx.Title("Rotation");
+            CConfig* config = context.ActiveConfig();
+            mbCtx.Subtitle(std::format("Current: {}", config ? config->Name : "None"));
+            if (config == nullptr) {
+                mbCtx.Option("No active vehicle/configuration");
+                return;
+            }
+            if (config->CamIndex >= config->Mount.size()) {
+                mbCtx.Option("~r~Error: CamIndex >= Mount.size()");
+                return;
+            }
+            CConfig::SMovement& movement = config->Mount[config->CamIndex].Movement;
+
+            mbCtx.FloatOption("Direction multiplier", movement.RotationDirectionMult, 0.0f, 4.0f, 0.01f,
+                { "How much the direction of travel affects the camera." });
+
+            mbCtx.FloatOption("Rotation: rotation", movement.RotationRotationMult, 0.0f, 4.0f, 0.01f,
+                { "How much the rotation speed affects the camera." });
+
+            mbCtx.FloatOption("Rotation: max angle", movement.RotationMaxAngle, 0.0f, 90.0f, 1.0f,
+                { "To how many degrees camera movement is capped." });
+        });
+
+    submenus.emplace_back("inertia.long.menu",
+        [](NativeMenu::Menu& mbCtx, CFPVScript& context) {
+            mbCtx.Title("Longitudinal inertia");
+            CConfig* config = context.ActiveConfig();
+            mbCtx.Subtitle(std::format("Current: {}", config ? config->Name : "None"));
+            if (config == nullptr) {
+                mbCtx.Option("No active vehicle/configuration");
+                return;
+            }
+            if (config->CamIndex >= config->Mount.size()) {
+                mbCtx.Option("~r~Error: CamIndex >= Mount.size()");
+                return;
+            }
+            CConfig::SMovement& movement = config->Mount[config->CamIndex].Movement;
+
+            mbCtx.FloatOption("Minimum force", movement.LongDeadzone, 0.0f, 2.0f, 0.01f,
+                { "How hard the car should accelerate or decelerate for the camera to start moving.",
+                  "Unit in Gs." });
+
+            mbCtx.FloatOption("Forward scale", movement.LongForwardMult, 0.0f, 2.0f, 0.01f,
+                { "How much the camera moves forwards when decelerating.",
+                  "A scale of 1.0 makes the camera move 1 meter at 1G deceleration.",
+                  "A scale of 0.1 makes the camera move 10 centimeters at 1G deceleration.",
+                  "0.0 disables forward movement." });
+
+            mbCtx.FloatOption("Backward scale", movement.LongBackwardMult, 0.0f, 2.0f, 0.01f,
+                { "How much the camera moves backwards when accelerating.",
+                  "A scale of 1.0 makes the camera move 1 meter at 1G acceleration.",
+                  "A scale of 0.1 makes the camera move 10 centimeters at 1G acceleration.",
+                  "0.0 disables backward movement." });
+
+            mbCtx.FloatOption("Forward limit", movement.LongForwardLimit, 0.0f, 1.0f, 0.01f,
+                { "How much the camera may move forwards during deceleration.",
+                  "Unit in meter." });
+
+            mbCtx.FloatOption("Backward limit", movement.LongBackwardLimit, 0.0f, 1.0f, 0.01f,
+                { "How much the camera may move backwards during acceleration.",
+                  "Unit in meter." });
+
+            mbCtx.FloatOptionCb("Pitch: Minimum force", movement.PitchDeadzone, 0.0f, 2.0f, 0.01f, GetKbEntryFloat,
+                { "How much the car should accelerate or decelerate for the camera to start moving.",
+                  "Unit in Gs." });
+
+            mbCtx.FloatOptionCb("Pitch: Up scale", movement.PitchUpMult, 0.0f, 90.0f, 0.01f, GetKbEntryFloat,
+                { "How much the camera pitches up during acceleration.",
+                  "A scale of 5.0 makes the camera pitch up 5 degrees at 1G acceleration.",
+                  "0.0 disables pitch-up on acceleration." });
+
+            mbCtx.FloatOptionCb("Pitch: Down scale", movement.PitchDownMult, 0.0f, 90.0f, 0.01f, GetKbEntryFloat,
+                { "How much the camera pitches down during deceleration.",
+                  "A scale of 5.0 makes the camera pitch down 5 degrees at 1G deceleration.",
+                  "0.0 disables pitch-down on deceleration." });
+
+            mbCtx.FloatOptionCb("Pitch: Up limit", movement.PitchUpMaxAngle, 0.0f, 90.0f, 0.5f, GetKbEntryFloat,
+                { "How much the camera may pitch up during acceleration.",
+                  "Unit in degrees." });
+
+            mbCtx.FloatOptionCb("Pitch: Down limit", movement.PitchDownMaxAngle, 0.0f, 90.0f, 0.5f, GetKbEntryFloat,
+                { "How much the camera may pitch down during deceleration.",
+                  "Unit in degrees." });
+        });
+
+    submenus.emplace_back("inertia.lat.menu",
+        [](NativeMenu::Menu& mbCtx, CFPVScript& context) {
+            mbCtx.Title("Lateral inertia");
+            CConfig* config = context.ActiveConfig();
+            mbCtx.Subtitle(std::format("Current: {}", config ? config->Name : "None"));
+            if (config == nullptr) {
+                mbCtx.Option("No active vehicle/configuration");
+                return;
+            }
+            if (config->CamIndex >= config->Mount.size()) {
+                mbCtx.Option("~r~Error: CamIndex >= Mount.size()");
+                return;
+            }
+            CConfig::SMovement& movement = config->Mount[config->CamIndex].Movement;
+
+            mbCtx.FloatOption("Minimum force", movement.LatDeadzone, 0.0f, 2.0f, 0.01f,
+                { "How hard the car should turn or accelerate sideways for the camera to start moving.",
+                  "Unit in Gs." });
+
+            mbCtx.FloatOption("Scale", movement.LatMult, -2.0f, 2.0f, 0.01f,
+                { "How much the camera moves left or right.",
+                  "A scale of 1.0 makes the camera move 1 meter at 1G.",
+                  "A scale of 0.1 makes the camera move 10 centimeters at 1G.",
+                  "Negative values make the camera move \"against\" the force.",
+                  "0.0 disables lateral movement." });
+
+            mbCtx.FloatOption("Limit", movement.LatLimit, 0.0f, 1.0f, 0.01f,
+                { "How much the camera may move left or right.",
+                  "Unit in meter." });
+        });
+
+    submenus.emplace_back("inertia.vert.menu",
+        [](NativeMenu::Menu& mbCtx, CFPVScript& context) {
+            mbCtx.Title("Vertical inertia");
+            CConfig* config = context.ActiveConfig();
+            mbCtx.Subtitle(std::format("Current: {}", config ? config->Name : "None"));
+            if (config == nullptr) {
+                mbCtx.Option("No active vehicle/configuration");
+                return;
+            }
+            if (config->CamIndex >= config->Mount.size()) {
+                mbCtx.Option("~r~Error: CamIndex >= Mount.size()");
+                return;
+            }
+            CConfig::SMovement& movement = config->Mount[config->CamIndex].Movement;
+
+            mbCtx.FloatOption("Minimum force", movement.VertDeadzone, 0.0f, 2.0f, 0.01f,
+                { "How hard the car goes up or down for the camera to start moving.",
+                  "Unit in Gs." });
+
+            mbCtx.FloatOption("Up scale", movement.VertUpMult, 0.0f, 2.0f, 0.01f,
+                { "How much the camera moves up when falling.",
+                  "A scale of 1.0 makes the camera move 1 meter at 1G.",
+                  "A scale of 0.1 makes the camera move 10 centimeters at 1G.",
+                  "0.0 disables up movement." });
+
+            mbCtx.FloatOption("Down scale", movement.VertDownMult, 0.0f, 2.0f, 0.01f,
+                { "How much the camera moves down when \"pushed down\".",
+                  "A scale of 1.0 makes the camera move 1 meter at 1G.",
+                  "A scale of 0.1 makes the camera move 10 centimeters at 1G.",
+                  "0.0 disables down movement." });
+
+            mbCtx.FloatOption("Up limit", movement.VertUpLimit, 0.0f, 1.0f, 0.01f,
+                { "How much the camera may move up.",
+                  "Unit in meter." });
+
+            mbCtx.FloatOption("Down limit", movement.VertDownLimit, 0.0f, 1.0f, 0.01f,
+                { "How much the camera may move down.",
+                  "Unit in meter." });
+        });
+
+    submenus.emplace_back("horizon.menu",
+        [](NativeMenu::Menu& mbCtx, CFPVScript& context) {
+            mbCtx.Title("Horizon lock");
+            CConfig* config = context.ActiveConfig();
+            mbCtx.Subtitle(std::format("Current: {}", config ? config->Name : "None"));
+            if (config == nullptr) {
+                mbCtx.Option("No active vehicle/configuration");
+                return;
+            }
+            if (config->CamIndex >= config->Mount.size()) {
+                mbCtx.Option("~r~Error: CamIndex >= Mount.size()");
+                return;
+            }
+            CConfig::SHorizonLock& horLck = config->Mount[config->CamIndex].HorizonLock;
+
+            mbCtx.BoolOption("Lock to horizon", horLck.Lock,
+                { "Lock the pitch and roll to the horizon." });
+
+            mbCtx.FloatOptionCb("Pitch limit", horLck.PitchLim, 0.0f, 90.0f, 1.0f, GetKbEntryFloat,
+                { "How much the pitch may differ between the camera and vehicle." });
+
+            mbCtx.FloatOptionCb("Roll limit", horLck.RollLim, 0.0f, 180.0f, 1.0f, GetKbEntryFloat,
+                { "How much the roll may differ between the camera and vehicle." });
+
+            mbCtx.StringArray("Lock pitch to", PitchModeNames, horLck.PitchMode,
+                { "Lock pitch with horizon, car or center on vehicle dynamically." });
+
+            mbCtx.FloatOptionCb("Pitch center speed", horLck.CenterSpeed, 0.1f, 10.0f, 0.1f, GetKbEntryFloat,
+                { "How quickly the camera centers on the vehicle pitch.",
+                    "Low value: Slowly centers onto the vehicle.",
+                    "High value: Quickly centers onto the vehicle." });
+        });
+
+    submenus.emplace_back("dof.menu",
+        [](NativeMenu::Menu& mbCtx, CFPVScript& context) {
+            mbCtx.Title("Depth of field");
+            CConfig* config = context.ActiveConfig();
+            mbCtx.Subtitle(std::format("Current: {}", config ? config->Name : "None"));
+            if (config == nullptr) {
+                mbCtx.Option("No active vehicle/configuration");
+                return;
+            }
+            if (config->CamIndex >= config->Mount.size()) {
+                mbCtx.Option("~r~Error: CamIndex >= Mount.size()");
+                return;
+            }
+            CConfig::SDoF& dof = config->Mount[config->CamIndex].DoF;
+
+            mbCtx.BoolOption("Enable", dof.Enable,
+                { "Enable or disable dynamic depth of field.",
+                  "Unfocuses the car and very far distances at high speed, for extra sense of speed.",
+                  "Very High post-processing required! May have significant performance impact.",
+                  "All options below can be edited precisely, press <Enter> to enter a number." });
+
+            mbCtx.FloatOptionCb("TargetSpeedMinDoF", dof.TargetSpeedMinDoF,
+                0.0f, 200.0f, 1.0f, GetKbEntryFloat,
+                { "Speed at which unfocusing starts, in m/s.",
+                  std::format("({:.0f} kph, {:.0f} mph)",
+                      dof.TargetSpeedMinDoF * 3.6f,
+                      dof.TargetSpeedMinDoF * 2.23694f) });
+
+            mbCtx.FloatOptionCb("TargetSpeedMaxDoF", dof.TargetSpeedMaxDoF,
+                0.0f, 400.0f, 1.0f, GetKbEntryFloat,
+                { "Speed at which unfocusing is largest, in m/s.",
+                  std::format("({:.0f} kph, {:.0f} mph)",
+                      dof.TargetSpeedMaxDoF * 3.6f,
+                      dof.TargetSpeedMaxDoF * 2.23694f) });
+
+            mbCtx.FloatOptionCb("NearOutFocusMinSpeedDist", dof.NearOutFocusMinSpeedDist,
+                0.0f, 10.0f, 0.01f, GetKbEntryFloat,
+                { "Distance of the plane that's out of focus, when traveling at or below 'TargetSpeedMinDoF'.",
+                  "In meters.",
+                  "Default: 0.00: nothing is blurred when going slow." });
+
+            mbCtx.FloatOptionCb("NearOutFocusMaxSpeedDist", dof.NearOutFocusMaxSpeedDist,
+                0.0f, 10.0f, 0.01f, GetKbEntryFloat,
+                { "Distance of the plane that's out of focus, when traveling at or above 'TargetSpeedMaxDoF'.",
+                  "In meters.",
+                  "Default: 0.50: everything closer than 0.5 meters (1.6 feet) to the camera is blurred when going fast." });
+
+            mbCtx.FloatOptionCb("NearInFocusMinSpeedDist", dof.NearInFocusMinSpeedDist,
+                0.1f, 100.0f, 0.1f, GetKbEntryFloat,
+                { "Distance of the plane that's in focus (when things stop being blurry), when traveling at or below 'TargetSpeedMinDoF'.",
+                  "In meters.",
+                  "Default: 0.10: Only objects closer than 0.1 meters (4 inches) to the camera are blurred when going slow.",
+                  "Must be higher than 'NearOutFocusMinSpeedDist'." });
+
+            mbCtx.FloatOptionCb("NearInFocusMaxSpeedDist", dof.NearInFocusMaxSpeedDist,
+                1.0f, 100.0f, 1.0f, GetKbEntryFloat,
+                { "Distance of the plane that's in focus (when things stop being blurry), when traveling at or above 'TargetSpeedMaxDoF'.",
+                  "In meters.",
+                  "Default: 20.0, where everything closer than 20 meters (65 feet) is blurred when going fast.",
+                  "Must be much higher than 'NearOutFocusMaxSpeedDist'." });
+
+            mbCtx.FloatOptionCb("FarInFocusMinSpeedDist", dof.FarInFocusMinSpeedDist,
+                100.0f, 100000.0f, 1.0f, GetKbEntryFloat,
+                { "Distance of the plane that's in focus (when things start being blurry), when traveling at or below 'TargetSpeedMinDoF'.",
+                  "In meters.",
+                  "Default: 100000: Practically infinite, no distant blur." });
+
+            mbCtx.FloatOptionCb("FarInFocusMaxSpeedDist", dof.FarInFocusMaxSpeedDist,
+                100.0f, 100000.0f, 1.0f, GetKbEntryFloat,
+                { "Distance of the plane that's in focus (when things stop being blurry), when traveling at or above 'TargetSpeedMaxDoF'.",
+                  "In meters.",
+                  "Default: 2000.0: Everything farther than 2 km (1.2 miles) starts to get blurred when going fast." });
+
+            mbCtx.FloatOptionCb("FarOutFocusMinSpeedDist", dof.FarOutFocusMinSpeedDist,
+                100.0f, 100000.0f, 0.01f, GetKbEntryFloat,
+                { "Distance of the plane that's out of focus, when traveling at or below 'TargetSpeedMinDoF'.",
+                  "In meters.",
+                  "Default: 100000: Practically infinite, no distant blur.",
+                  "Must be higher or equal to 'FarInFocusMinSpeedDist'." });
+
+            mbCtx.FloatOptionCb("FarOutFocusMaxSpeedDist", dof.FarOutFocusMaxSpeedDist,
+                100.0f, 100000.0f, 0.01f, GetKbEntryFloat,
+                { "Distance of the plane that's out of focus, when traveling at or above 'TargetSpeedMaxDoF'.",
+                  "In meters.",
+                  "Default: 10000: Everything farther than 10 km (6.2 miles) is as blurred can be, when going fast.",
+                  "Must be higher than 'FarInFocusMaxSpeedDist'." });
+
+            mbCtx.FloatOptionCb("TargetAccelMinDoF", dof.TargetAccelMinDoF,
+                0.0f, 200.0f, 0.05f, GetKbEntryFloat,
+                { "Acceleration where unfocusing is reduced, in m/s^2.",
+                  std::format("({:.2f} G)", dof.TargetAccelMinDoF / 9.81f),
+                  "Default: 0.5G, to reduce blur when not accelerating or coasting." });
+
+            mbCtx.FloatOptionCb("TargetAccelMaxDoF", dof.TargetAccelMaxDoF,
+                0.0f, 200.0f, 0.05f, GetKbEntryFloat,
+                { "Acceleration where unfocusing is increased, in m/s^2.",
+                  std::format("({:.2f} G)", dof.TargetAccelMaxDoF / 9.81f),
+                  "Default: 1.0G, at which blur (for that speed) is maximized." });
+
+            mbCtx.FloatOptionCb("TargetAccelMinDoFMod", dof.TargetAccelMinDoFMod,
+                0.0f, 10.0f, 0.01f, GetKbEntryFloat,
+                { "Modifier for blur reduction when at or below 'TargetAccelMinDoF' acceleration.",
+                  "Default: 0.1, at low acceleration the near blur is moved closer to the camera, unblurring the dashboard and wheel." });
+
+            mbCtx.FloatOptionCb("TargetAccelMaxDoFMod", dof.TargetAccelMaxDoFMod,
+                0.0f, 10.0f, 0.01f, GetKbEntryFloat,
+                { "Modifier for blur reduction when at or above 'TargetAccelMaxDoF' acceleration.",
+                  "Default: 1.0, at high acceleration the near blur is as far forward as decided by the speed." });
         });
 
     return submenus;

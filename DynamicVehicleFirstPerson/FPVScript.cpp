@@ -19,6 +19,10 @@ void CFPVScript::Tick() {
     }
 }
 
+void CFPVScript::Cancel() {
+    // TODO
+}
+
 void CFPVScript::UpdateActiveConfig() {
     if (!ENTITY::DOES_ENTITY_EXIST(mVehicle)) {
         mActiveConfig = &mDefaultConfig;

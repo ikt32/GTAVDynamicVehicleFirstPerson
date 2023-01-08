@@ -11,6 +11,12 @@ public:
         GenericNone,    // [ID] writes none
     };
 
+    struct SLean {
+        float CenterDist = 0.25f;
+        float ForwardDist = 0.05f;
+        float UpDist = 0.08f;
+    };
+
     struct SMovement {
         bool Follow = true;
         float RotationDirectionMult = 0.50f;
@@ -100,6 +106,7 @@ public:
         float OffsetForward = 0.05f;
         float OffsetSide = 0.0f;
         float Pitch = 0.0f;
+        SLean Lean;
         SHorizonLock HorizonLock;
         SMovement Movement;
         SDoF DoF;

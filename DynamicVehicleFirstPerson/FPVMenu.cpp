@@ -24,6 +24,22 @@ namespace {
         "Vehicle",
         "Dynamic"
     };
+
+    // On return false, an option is already created and the submenu may exit
+    bool CreateCameraSubtitle(NativeMenu::Menu& mbCtx, CConfig* config) {
+        if (config == nullptr) {
+            mbCtx.Subtitle("~r~Error");
+            mbCtx.Option("No active vehicle/configuration");
+            return false;
+        }
+        if (config->CamIndex >= config->Mount.size()) {
+            mbCtx.Subtitle("~r~Error");
+            mbCtx.Option("~r~Error: CamIndex >= Mount.size()");
+            return false;
+        }
+        mbCtx.Subtitle(std::format("Camera {} - {}", config->Name, config->CamIndex));
+        return true;
+    }
 }
 
 std::vector<CScriptMenu<CFPVScript>::CSubmenu> FPV::BuildMenu() {
@@ -124,6 +140,11 @@ std::vector<CScriptMenu<CFPVScript>::CSubmenu> FPV::BuildMenu() {
                 mbCtx.Option("No active vehicle/configuration");
                 return;
             }
+
+            mbCtx.MenuOption("Sensitivity settings", "sensitivity.menu",
+                { "Adjust mouse/controller sensitivity.",
+                  "These options apply to all cameras in this config." });
+
             if (config->CamIndex >= config->Mount.size()) {
                 mbCtx.Option("~r~Error: CamIndex >= Mount.size()");
                 return;
@@ -143,20 +164,20 @@ std::vector<CScriptMenu<CFPVScript>::CSubmenu> FPV::BuildMenu() {
             mbCtx.FloatOptionCb("Field of view", cam.FOV, 1.0f, 120.0f, 0.5f, FPV::GetKbEntryFloat,
                 { "In degrees." });
 
-            mbCtx.FloatOptionCb("Offset height", cam.OffsetHeight, -2.0f, 2.0f, 0.01f, FPV::GetKbEntryFloat,
+            mbCtx.FloatOptionCb("Height offset", cam.OffsetHeight, -2.0f, 2.0f, 0.01f, FPV::GetKbEntryFloat,
                 { "Distance in meters." });
 
-            mbCtx.FloatOptionCb("Offset forward", cam.OffsetForward, -2.0f, 2.0f, 0.01f, FPV::GetKbEntryFloat,
+            mbCtx.FloatOptionCb("Forward offset", cam.OffsetForward, -2.0f, 2.0f, 0.01f, FPV::GetKbEntryFloat,
                 { "Distance in meters." });
 
-            mbCtx.FloatOptionCb("Offset side", cam.OffsetSide, -2.0f, 2.0f, 0.01f, FPV::GetKbEntryFloat,
+            mbCtx.FloatOptionCb("Side offset", cam.OffsetSide, -2.0f, 2.0f, 0.01f, FPV::GetKbEntryFloat,
                 { "Distance in meters." });
 
-            mbCtx.FloatOptionCb("Pitch", cam.Pitch, -20.0f, 20.0f, 0.1f, FPV::GetKbEntryFloat,
+            mbCtx.FloatOptionCb("Pitch offset", cam.Pitch, -20.0f, 20.0f, 0.1f, FPV::GetKbEntryFloat,
                 { "In degrees." });
 
-            mbCtx.MenuOption("Looking options", "look.menu",
-                { "Adjust mouse/controller sensitivity." });
+            mbCtx.MenuOption("Leaning options", "lean.menu",
+                { "Modify how the camera moves when looking back, for better visibility." });
 
             mbCtx.MenuOption("Camera inertia options", "inertia.menu",
                 { "Modify camera inertia and movement." });
@@ -168,20 +189,15 @@ std::vector<CScriptMenu<CFPVScript>::CSubmenu> FPV::BuildMenu() {
                 { "Modify depth of field effects." });
         });
 
-    submenus.emplace_back("look.menu",
+    submenus.emplace_back("sensitivity.menu",
         [](NativeMenu::Menu& mbCtx, CFPVScript& context) {
-            mbCtx.Title("Looking");
+            mbCtx.Title("Sensitivity");
             CConfig* config = context.ActiveConfig();
             mbCtx.Subtitle(std::format("Current: {}", config ? config->Name : "None"));
             if (config == nullptr) {
                 mbCtx.Option("No active vehicle/configuration");
                 return;
             }
-            if (config->CamIndex >= config->Mount.size()) {
-                mbCtx.Option("~r~Error: CamIndex >= Mount.size()");
-                return;
-            }
-            CConfig::SCameraSettings& cam = config->Mount[config->CamIndex];
 
             mbCtx.FloatOptionCb("Controller smoothing", config->Look.LookTime, 0.0f, 0.5f, 0.000001f, GetKbEntryFloat,
                 { "How smooth the camera moves.", "Press enter to enter a value manually. Range: 0.0 to 0.5." });
@@ -195,17 +211,30 @@ std::vector<CScriptMenu<CFPVScript>::CSubmenu> FPV::BuildMenu() {
                 { "Milliseconds before centering the camera after looking with the mouse." });
         });
 
+    submenus.emplace_back("lean.menu",
+        [](NativeMenu::Menu& mbCtx, CFPVScript& context) {
+            mbCtx.Title("Leaning");
+            CConfig* config = context.ActiveConfig();
+            if (!CreateCameraSubtitle(mbCtx, config)) {
+                return;
+            }
+            CConfig::SCameraSettings& cam = config->Mount[config->CamIndex];
+
+            mbCtx.FloatOptionCb("Center distance", cam.Lean.CenterDist, -2.0f, 2.0f, 0.01f, GetKbEntryFloat,
+                { "Distance in meters to lean over to the center when looking back." });
+
+            mbCtx.FloatOptionCb("Forward distance", cam.Lean.ForwardDist, -2.0f, 2.0f, 0.01f, GetKbEntryFloat,
+                { "Distance in meters to lean forward when looking back/sideways." });
+
+            mbCtx.FloatOptionCb("Up distance", cam.Lean.UpDist, -2.0f, 2.0f, 0.01f, GetKbEntryFloat,
+                { "Distance in meters to peek up when looking back." });
+        });
+
     submenus.emplace_back("inertia.menu",
         [](NativeMenu::Menu& mbCtx, CFPVScript& context) {
             mbCtx.Title("Inertia & movement");
             CConfig* config = context.ActiveConfig();
-            mbCtx.Subtitle(std::format("Current: {}", config ? config->Name : "None"));
-            if (config == nullptr) {
-                mbCtx.Option("No active vehicle/configuration");
-                return;
-            }
-            if (config->CamIndex >= config->Mount.size()) {
-                mbCtx.Option("~r~Error: CamIndex >= Mount.size()");
+            if (!CreateCameraSubtitle(mbCtx, config)) {
                 return;
             }
             CConfig::SMovement& movement = config->Mount[config->CamIndex].Movement;
@@ -242,13 +271,7 @@ std::vector<CScriptMenu<CFPVScript>::CSubmenu> FPV::BuildMenu() {
         [](NativeMenu::Menu& mbCtx, CFPVScript& context) {
             mbCtx.Title("Rotation");
             CConfig* config = context.ActiveConfig();
-            mbCtx.Subtitle(std::format("Current: {}", config ? config->Name : "None"));
-            if (config == nullptr) {
-                mbCtx.Option("No active vehicle/configuration");
-                return;
-            }
-            if (config->CamIndex >= config->Mount.size()) {
-                mbCtx.Option("~r~Error: CamIndex >= Mount.size()");
+            if (!CreateCameraSubtitle(mbCtx, config)) {
                 return;
             }
             CConfig::SMovement& movement = config->Mount[config->CamIndex].Movement;
@@ -267,13 +290,7 @@ std::vector<CScriptMenu<CFPVScript>::CSubmenu> FPV::BuildMenu() {
         [](NativeMenu::Menu& mbCtx, CFPVScript& context) {
             mbCtx.Title("Longitudinal inertia");
             CConfig* config = context.ActiveConfig();
-            mbCtx.Subtitle(std::format("Current: {}", config ? config->Name : "None"));
-            if (config == nullptr) {
-                mbCtx.Option("No active vehicle/configuration");
-                return;
-            }
-            if (config->CamIndex >= config->Mount.size()) {
-                mbCtx.Option("~r~Error: CamIndex >= Mount.size()");
+            if (!CreateCameraSubtitle(mbCtx, config)) {
                 return;
             }
             CConfig::SMovement& movement = config->Mount[config->CamIndex].Movement;
@@ -329,13 +346,7 @@ std::vector<CScriptMenu<CFPVScript>::CSubmenu> FPV::BuildMenu() {
         [](NativeMenu::Menu& mbCtx, CFPVScript& context) {
             mbCtx.Title("Lateral inertia");
             CConfig* config = context.ActiveConfig();
-            mbCtx.Subtitle(std::format("Current: {}", config ? config->Name : "None"));
-            if (config == nullptr) {
-                mbCtx.Option("No active vehicle/configuration");
-                return;
-            }
-            if (config->CamIndex >= config->Mount.size()) {
-                mbCtx.Option("~r~Error: CamIndex >= Mount.size()");
+            if (!CreateCameraSubtitle(mbCtx, config)) {
                 return;
             }
             CConfig::SMovement& movement = config->Mount[config->CamIndex].Movement;
@@ -360,13 +371,7 @@ std::vector<CScriptMenu<CFPVScript>::CSubmenu> FPV::BuildMenu() {
         [](NativeMenu::Menu& mbCtx, CFPVScript& context) {
             mbCtx.Title("Vertical inertia");
             CConfig* config = context.ActiveConfig();
-            mbCtx.Subtitle(std::format("Current: {}", config ? config->Name : "None"));
-            if (config == nullptr) {
-                mbCtx.Option("No active vehicle/configuration");
-                return;
-            }
-            if (config->CamIndex >= config->Mount.size()) {
-                mbCtx.Option("~r~Error: CamIndex >= Mount.size()");
+            if (!CreateCameraSubtitle(mbCtx, config)) {
                 return;
             }
             CConfig::SMovement& movement = config->Mount[config->CamIndex].Movement;
@@ -400,13 +405,7 @@ std::vector<CScriptMenu<CFPVScript>::CSubmenu> FPV::BuildMenu() {
         [](NativeMenu::Menu& mbCtx, CFPVScript& context) {
             mbCtx.Title("Horizon lock");
             CConfig* config = context.ActiveConfig();
-            mbCtx.Subtitle(std::format("Current: {}", config ? config->Name : "None"));
-            if (config == nullptr) {
-                mbCtx.Option("No active vehicle/configuration");
-                return;
-            }
-            if (config->CamIndex >= config->Mount.size()) {
-                mbCtx.Option("~r~Error: CamIndex >= Mount.size()");
+            if (!CreateCameraSubtitle(mbCtx, config)) {
                 return;
             }
             CConfig::SHorizonLock& horLck = config->Mount[config->CamIndex].HorizonLock;
@@ -433,13 +432,7 @@ std::vector<CScriptMenu<CFPVScript>::CSubmenu> FPV::BuildMenu() {
         [](NativeMenu::Menu& mbCtx, CFPVScript& context) {
             mbCtx.Title("Depth of field");
             CConfig* config = context.ActiveConfig();
-            mbCtx.Subtitle(std::format("Current: {}", config ? config->Name : "None"));
-            if (config == nullptr) {
-                mbCtx.Option("No active vehicle/configuration");
-                return;
-            }
-            if (config->CamIndex >= config->Mount.size()) {
-                mbCtx.Option("~r~Error: CamIndex >= Mount.size()");
+            if (!CreateCameraSubtitle(mbCtx, config)) {
                 return;
             }
             CConfig::SDoF& dof = config->Mount[config->CamIndex].DoF;

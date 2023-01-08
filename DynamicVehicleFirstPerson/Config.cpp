@@ -39,6 +39,18 @@ CConfig::EMountPoint GetValue(CSimpleIniA& ini, const char* section, const char*
     return static_cast<CConfig::EMountPoint>(outVal);
 }
 
+#define SAVE_VAL_LEAN(section, source) { \
+    SAVE_VAL(section, "CenterDist",  ##source.CenterDist); \
+    SAVE_VAL(section, "ForwardDist", ##source.ForwardDist); \
+    SAVE_VAL(section, "UpDist",      ##source.UpDist); \
+}
+
+#define LOAD_VAL_LEAN(section, source) { \
+    LOAD_VAL(section, "CenterDist",  ##source.CenterDist); \
+    LOAD_VAL(section, "ForwardDist", ##source.ForwardDist); \
+    LOAD_VAL(section, "UpDist",      ##source.UpDist); \
+}
+
 #define SAVE_VAL_MOVEMENT(section, source) { \
     SAVE_VAL(section, "Follow",            ##source.Follow); \
     SAVE_VAL(section, "RotationDirectionMult", ##source.RotationDirectionMult); \
@@ -215,6 +227,7 @@ CConfig CConfig::Read(const std::string& configFile) {
     auto fnAddMount = [&](int i) {
         config.Mount.push_back(SCameraSettings{});
         LOAD_VAL_CAMERA(    "Mount" STR(i),             config.Mount[i]);
+        LOAD_VAL_LEAN(      "Mount" STR(i) ".Lean",     config.Mount[i].Lean);
         LOAD_VAL_MOVEMENT(  "Mount" STR(i) ".Movement", config.Mount[i].Movement);
         LOAD_VAL_HORIZON(   "Mount" STR(i) ".Horizon",  config.Mount[i].HorizonLock);
         LOAD_VAL_DOF(       "Mount" STR(i) ".DoF",      config.Mount[i].DoF);
@@ -297,6 +310,7 @@ bool CConfig::Write(const std::string& newName, Hash model, std::string plate, E
     // [Mount0-9]
     for (int i = 0; i < Mount.size(); ++i) {
         SAVE_VAL_CAMERA(    "Mount" STR(i),             Mount[i]);
+        SAVE_VAL_LEAN(      "Mount" STR(i) ".Lean",     Mount[i].Lean);
         SAVE_VAL_MOVEMENT(  "Mount" STR(i) ".Movement", Mount[i].Movement);
         SAVE_VAL_HORIZON(   "Mount" STR(i) ".Horizon",  Mount[i].HorizonLock);
         SAVE_VAL_DOF(       "Mount" STR(i) ".DoF",      Mount[i].DoF);

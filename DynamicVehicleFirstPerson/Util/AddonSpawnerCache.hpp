@@ -5,4 +5,6 @@
 
 namespace ASCache {
     const std::unordered_map<Hash, std::string>& Get();
+
+    std::string GetCachedModelName(Hash model);
 }

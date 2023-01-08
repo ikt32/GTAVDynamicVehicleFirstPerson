@@ -44,6 +44,7 @@
     <ClCompile Include="Util\ScriptUtils.cpp">
       <Filter>Util</Filter>
     </ClCompile>
+    <ClCompile Include="FPVMenuUtils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Script.hpp" />
@@ -113,6 +114,7 @@
     <ClInclude Include="Util\ScriptUtils.hpp">
       <Filter>Util</Filter>
     </ClInclude>
+    <ClInclude Include="FPVMenuUtils.hpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Util">

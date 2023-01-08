@@ -118,6 +118,7 @@
     <ClCompile Include="FPVMenu.cpp" />
     <ClCompile Include="ScriptSettings.cpp" />
     <ClCompile Include="SettingsCommon.cpp" />
+    <ClCompile Include="FPVMenuUtils.cpp" />
     <ClCompile Include="Util\AddonSpawnerCache.cpp" />
     <ClCompile Include="Util\Logger.cpp" />
     <ClCompile Include="Util\Paths.cpp" />
@@ -142,6 +143,7 @@
     <ClInclude Include="..\thirdparty\simpleini\SimpleIni.h" />
     <ClInclude Include="Config.hpp" />
     <ClInclude Include="Constants.hpp" />
+    <ClInclude Include="FPVMenuUtils.hpp" />
     <ClInclude Include="FPVScript.hpp" />
     <ClInclude Include="Script.hpp" />
     <ClInclude Include="ScriptMenu.hpp" />

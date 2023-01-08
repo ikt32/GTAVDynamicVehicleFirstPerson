@@ -22,3 +22,13 @@ const std::unordered_map<Hash, std::string>& ASCache::Get() {
     }
     return hashCache;
 }
+
+std::string ASCache::GetCachedModelName(Hash model) {
+    const std::unordered_map<Hash, std::string>& cache = ASCache::Get();
+    if (!cache.empty()) {
+        auto res = cache.find(model);
+        if (res != cache.end())
+            return res->second;
+    }
+    return {};
+}

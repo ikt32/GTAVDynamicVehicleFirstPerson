@@ -27,11 +27,23 @@
         option = GetValue(ini, section, key, option);\
     }
 
+void SetValue(CSimpleIniA & ini, const char* section, const char* key, CConfig::EMountPoint val) {
+    ini.SetLongValue(section, key, static_cast<int>(val));
+}
+
+CConfig::EMountPoint GetValue(CSimpleIniA& ini, const char* section, const char* key, CConfig::EMountPoint val) {
+    int outVal = ini.GetLongValue(section, key, static_cast<int>(val));
+    if (outVal != 0 || outVal != 1) {
+        return CConfig::EMountPoint::Vehicle;
+    }
+    return static_cast<CConfig::EMountPoint>(outVal);
+}
+
 #define SAVE_VAL_MOVEMENT(section, source) { \
-    SAVE_VAL(section, "FollowMovement",    ##source.Follow); \
-    SAVE_VAL(section, "MovementMultVel",   ##source.RotationDirectionMult); \
-    SAVE_VAL(section, "MovementMultRot",   ##source.RotationRotationMult); \
-    SAVE_VAL(section, "MovementCap",       ##source.RotationMaxAngle); \
+    SAVE_VAL(section, "Follow",            ##source.Follow); \
+    SAVE_VAL(section, "RotationDirectionMult", ##source.RotationDirectionMult); \
+    SAVE_VAL(section, "RotationRotationMult",  ##source.RotationRotationMult); \
+    SAVE_VAL(section, "RotationMaxAngle",      ##source.RotationMaxAngle); \
     SAVE_VAL(section, "LongDeadzone",      ##source.LongDeadzone); \
     SAVE_VAL(section, "LongForwardMult",   ##source.LongForwardMult); \
     SAVE_VAL(section, "LongBackwardMult",  ##source.LongBackwardMult); \
@@ -54,10 +66,10 @@
 }
 
 #define LOAD_VAL_MOVEMENT(section, source) { \
-    LOAD_VAL(section, "FollowMovement",    ##source.Follow); \
-    LOAD_VAL(section, "MovementMultVel",   ##source.RotationDirectionMult); \
-    LOAD_VAL(section, "MovementMultRot",   ##source.RotationRotationMult); \
-    LOAD_VAL(section, "MovementCap",       ##source.RotationMaxAngle); \
+    LOAD_VAL(section, "Follow",            ##source.Follow); \
+    LOAD_VAL(section, "RotationDirectionMult", ##source.RotationDirectionMult); \
+    LOAD_VAL(section, "RotationRotationMult",  ##source.RotationRotationMult); \
+    LOAD_VAL(section, "RotationMaxAngle",      ##source.RotationMaxAngle); \
     LOAD_VAL(section, "LongDeadzone",      ##source.LongDeadzone); \
     LOAD_VAL(section, "LongForwardMult",   ##source.LongForwardMult); \
     LOAD_VAL(section, "LongBackwardMult",  ##source.LongBackwardMult); \
@@ -80,58 +92,59 @@
 }
 
 #define SAVE_VAL_HORIZON(section, source) { \
-    SAVE_VAL(section, "HorLock",        ##source.Lock); \
-    SAVE_VAL(section, "HorPitchMode",   ##source.PitchMode); \
-    SAVE_VAL(section, "HorCenterSpeed", ##source.CenterSpeed); \
-    SAVE_VAL(section, "HorPitchLim",    ##source.PitchLim); \
-    SAVE_VAL(section, "HorRollLim",     ##source.RollLim); \
+    SAVE_VAL(section, "Lock",        ##source.Lock); \
+    SAVE_VAL(section, "PitchMode",   ##source.PitchMode); \
+    SAVE_VAL(section, "CenterSpeed", ##source.CenterSpeed); \
+    SAVE_VAL(section, "PitchLim",    ##source.PitchLim); \
+    SAVE_VAL(section, "RollLim",     ##source.RollLim); \
 }
 
 #define LOAD_VAL_HORIZON(section, source) { \
-    LOAD_VAL(section, "HorLock",        ##source.Lock); \
-    LOAD_VAL(section, "HorPitchMode",   ##source.PitchMode); \
-    LOAD_VAL(section, "HorCenterSpeed", ##source.CenterSpeed); \
-    LOAD_VAL(section, "HorPitchLim",    ##source.PitchLim); \
-    LOAD_VAL(section, "HorRollLim",     ##source.RollLim); \
+    LOAD_VAL(section, "Lock",        ##source.Lock); \
+    LOAD_VAL(section, "PitchMode",   ##source.PitchMode); \
+    LOAD_VAL(section, "CenterSpeed", ##source.CenterSpeed); \
+    LOAD_VAL(section, "PitchLim",    ##source.PitchLim); \
+    LOAD_VAL(section, "RollLim",     ##source.RollLim); \
 }
 
 #define SAVE_VAL_DOF(section, source) { \
-    SAVE_VAL(section, "DoFEnable",                   ##source.Enable); \
-    SAVE_VAL(section, "DoFTargetSpeedMinDoF",        ##source.TargetSpeedMinDoF); \
-    SAVE_VAL(section, "DoFTargetSpeedMaxDoF",        ##source.TargetSpeedMaxDoF); \
-    SAVE_VAL(section, "DoFTargetAccelMinDoF",        ##source.TargetAccelMinDoF); \
-    SAVE_VAL(section, "DoFTargetAccelMaxDoF",        ##source.TargetAccelMaxDoF); \
-    SAVE_VAL(section, "DoFTargetAccelMinDoFMod",     ##source.TargetAccelMinDoFMod); \
-    SAVE_VAL(section, "DoFTargetAccelMaxDoFMod",     ##source.TargetAccelMaxDoFMod); \
-    SAVE_VAL(section, "DoFNearOutFocusMinSpeedDist", ##source.NearOutFocusMinSpeedDist); \
-    SAVE_VAL(section, "DoFNearOutFocusMaxSpeedDist", ##source.NearOutFocusMaxSpeedDist); \
-    SAVE_VAL(section, "DoFNearInFocusMinSpeedDist",  ##source.NearInFocusMinSpeedDist); \
-    SAVE_VAL(section, "DoFNearInFocusMaxSpeedDist",  ##source.NearInFocusMaxSpeedDist); \
-    SAVE_VAL(section, "DoFFarInFocusMinSpeedDist",   ##source.FarInFocusMinSpeedDist); \
-    SAVE_VAL(section, "DoFFarInFocusMaxSpeedDist",   ##source.FarInFocusMaxSpeedDist); \
-    SAVE_VAL(section, "DoFFarOutFocusMinSpeedDist",  ##source.FarOutFocusMinSpeedDist); \
-    SAVE_VAL(section, "DoFFarOutFocusMaxSpeedDist",  ##source.FarOutFocusMaxSpeedDist); \
+    SAVE_VAL(section, "Enable",                   ##source.Enable); \
+    SAVE_VAL(section, "TargetSpeedMinDoF",        ##source.TargetSpeedMinDoF); \
+    SAVE_VAL(section, "TargetSpeedMaxDoF",        ##source.TargetSpeedMaxDoF); \
+    SAVE_VAL(section, "TargetAccelMinDoF",        ##source.TargetAccelMinDoF); \
+    SAVE_VAL(section, "TargetAccelMaxDoF",        ##source.TargetAccelMaxDoF); \
+    SAVE_VAL(section, "TargetAccelMinDoFMod",     ##source.TargetAccelMinDoFMod); \
+    SAVE_VAL(section, "TargetAccelMaxDoFMod",     ##source.TargetAccelMaxDoFMod); \
+    SAVE_VAL(section, "NearOutFocusMinSpeedDist", ##source.NearOutFocusMinSpeedDist); \
+    SAVE_VAL(section, "NearOutFocusMaxSpeedDist", ##source.NearOutFocusMaxSpeedDist); \
+    SAVE_VAL(section, "NearInFocusMinSpeedDist",  ##source.NearInFocusMinSpeedDist); \
+    SAVE_VAL(section, "NearInFocusMaxSpeedDist",  ##source.NearInFocusMaxSpeedDist); \
+    SAVE_VAL(section, "FarInFocusMinSpeedDist",   ##source.FarInFocusMinSpeedDist); \
+    SAVE_VAL(section, "FarInFocusMaxSpeedDist",   ##source.FarInFocusMaxSpeedDist); \
+    SAVE_VAL(section, "FarOutFocusMinSpeedDist",  ##source.FarOutFocusMinSpeedDist); \
+    SAVE_VAL(section, "FarOutFocusMaxSpeedDist",  ##source.FarOutFocusMaxSpeedDist); \
 }
 
 #define LOAD_VAL_DOF(section, source) { \
-    LOAD_VAL(section, "DoFEnable",                   ##source.Enable); \
-    LOAD_VAL(section, "DoFTargetSpeedMinDoF",        ##source.TargetSpeedMinDoF); \
-    LOAD_VAL(section, "DoFTargetSpeedMaxDoF",        ##source.TargetSpeedMaxDoF); \
-    LOAD_VAL(section, "DoFTargetAccelMinDoF",        ##source.TargetAccelMinDoF); \
-    LOAD_VAL(section, "DoFTargetAccelMaxDoF",        ##source.TargetAccelMaxDoF); \
-    LOAD_VAL(section, "DoFTargetAccelMinDoFMod",     ##source.TargetAccelMinDoFMod); \
-    LOAD_VAL(section, "DoFTargetAccelMaxDoFMod",     ##source.TargetAccelMaxDoFMod); \
-    LOAD_VAL(section, "DoFNearOutFocusMinSpeedDist", ##source.NearOutFocusMinSpeedDist); \
-    LOAD_VAL(section, "DoFNearOutFocusMaxSpeedDist", ##source.NearOutFocusMaxSpeedDist); \
-    LOAD_VAL(section, "DoFNearInFocusMinSpeedDist",  ##source.NearInFocusMinSpeedDist); \
-    LOAD_VAL(section, "DoFNearInFocusMaxSpeedDist",  ##source.NearInFocusMaxSpeedDist); \
-    LOAD_VAL(section, "DoFFarInFocusMinSpeedDist",   ##source.FarInFocusMinSpeedDist); \
-    LOAD_VAL(section, "DoFFarInFocusMaxSpeedDist",   ##source.FarInFocusMaxSpeedDist); \
-    LOAD_VAL(section, "DoFFarOutFocusMinSpeedDist",  ##source.FarOutFocusMinSpeedDist); \
-    LOAD_VAL(section, "DoFFarOutFocusMaxSpeedDist",  ##source.FarOutFocusMaxSpeedDist); \
+    LOAD_VAL(section, "Enable",                   ##source.Enable); \
+    LOAD_VAL(section, "TargetSpeedMinDoF",        ##source.TargetSpeedMinDoF); \
+    LOAD_VAL(section, "TargetSpeedMaxDoF",        ##source.TargetSpeedMaxDoF); \
+    LOAD_VAL(section, "TargetAccelMinDoF",        ##source.TargetAccelMinDoF); \
+    LOAD_VAL(section, "TargetAccelMaxDoF",        ##source.TargetAccelMaxDoF); \
+    LOAD_VAL(section, "TargetAccelMinDoFMod",     ##source.TargetAccelMinDoFMod); \
+    LOAD_VAL(section, "TargetAccelMaxDoFMod",     ##source.TargetAccelMaxDoFMod); \
+    LOAD_VAL(section, "NearOutFocusMinSpeedDist", ##source.NearOutFocusMinSpeedDist); \
+    LOAD_VAL(section, "NearOutFocusMaxSpeedDist", ##source.NearOutFocusMaxSpeedDist); \
+    LOAD_VAL(section, "NearInFocusMinSpeedDist",  ##source.NearInFocusMinSpeedDist); \
+    LOAD_VAL(section, "NearInFocusMaxSpeedDist",  ##source.NearInFocusMaxSpeedDist); \
+    LOAD_VAL(section, "FarInFocusMinSpeedDist",   ##source.FarInFocusMinSpeedDist); \
+    LOAD_VAL(section, "FarInFocusMaxSpeedDist",   ##source.FarInFocusMaxSpeedDist); \
+    LOAD_VAL(section, "FarOutFocusMinSpeedDist",  ##source.FarOutFocusMinSpeedDist); \
+    LOAD_VAL(section, "FarOutFocusMaxSpeedDist",  ##source.FarOutFocusMaxSpeedDist); \
 }
 
 #define SAVE_VAL_CAMERA(section, source) { \
+    SAVE_VAL(section, "MountPoint",    ##source.MountPoint); \
     SAVE_VAL(section, "FOV",           ##source.FOV); \
     SAVE_VAL(section, "OffsetHeight",  ##source.OffsetHeight); \
     SAVE_VAL(section, "OffsetForward", ##source.OffsetForward); \
@@ -140,6 +153,7 @@
 }
 
 #define LOAD_VAL_CAMERA(section, source) { \
+    LOAD_VAL(section, "MountPoint",    ##source.MountPoint); \
     LOAD_VAL(section, "FOV",           ##source.FOV); \
     LOAD_VAL(section, "OffsetHeight",  ##source.OffsetHeight); \
     LOAD_VAL(section, "OffsetForward", ##source.OffsetForward); \
@@ -189,15 +203,7 @@ CConfig CConfig::Read(const std::string& configFile) {
 
     // [Main]
     LOAD_VAL("Main", "Enable", config.Enable);
-
-    std::string mountPoint = ini.GetValue("Main", "MountPoint", "Vehicle");
-    if (mountPoint == "Ped")
-        config.MountPoint = EMount::Ped;
-    else
-        config.MountPoint = EMount::Vehicle;
-
-    LOAD_VAL("Main", "MountIdPed", config.MountIdPed);
-    LOAD_VAL("Main", "MountIdVehicle", config.MountIdVehicle);
+    LOAD_VAL("Main", "CamIndex", config.CamIndex);
 
     // [Look]
     LOAD_VAL("Look", "LookTime", config.Look.LookTime);
@@ -205,50 +211,34 @@ CConfig CConfig::Read(const std::string& configFile) {
     LOAD_VAL("Look", "MouseCenterTimeout", config.Look.MouseCenterTimeout);
     LOAD_VAL("Look", "MouseSensitivity", config.Look.MouseSensitivity);
 
-    // [Vehicle0-9]
-    auto fnAddVehicle = [&](int i) {
-        config.Vehicle.push_back(SCameraSettings{});
-        LOAD_VAL_CAMERA("Vehicle" STR(i), config.Vehicle[i]);
-        LOAD_VAL_MOVEMENT("Vehicle", config.Vehicle[i].Movement);
-        LOAD_VAL_HORIZON("Vehicle", config.Vehicle[i].HorizonLock);
-        LOAD_VAL_DOF("Vehicle", config.Vehicle[i].DoF);
+    // [Mount0-9]
+    auto fnAddMount = [&](int i) {
+        config.Mount.push_back(SCameraSettings{});
+        LOAD_VAL_CAMERA(    "Mount" STR(i),             config.Mount[i]);
+        LOAD_VAL_MOVEMENT(  "Mount" STR(i) ".Movement", config.Mount[i].Movement);
+        LOAD_VAL_HORIZON(   "Mount" STR(i) ".Horizon",  config.Mount[i].HorizonLock);
+        LOAD_VAL_DOF(       "Mount" STR(i) ".DoF",      config.Mount[i].DoF);
     };
 
-    config.Vehicle.clear();
+    config.Mount.clear();
     for (int i = 0; i < 10; ++i) {
-        if (!ini.SectionExists("Vehicle" STR(i))) {
+        if (!ini.SectionExists("Mount" STR(i))) {
             break;
         }
 
-        fnAddVehicle(i);
+        fnAddMount(i);
     }
 
-    if (config.Vehicle.empty()) {
-        LOG(WARN, "Empty Vehicle config section, creating default");
-        fnAddVehicle(0);
+    if (config.Mount.empty()) {
+        LOG(WARN, "[Config] Empty Mount config section, creating default");
+        fnAddMount(0);
     }
 
-    // [Ped0-9]
-    auto fnAddPed = [&](int i) {
-        config.Ped.push_back(SCameraSettings{});
-        LOAD_VAL_CAMERA("Ped" STR(i), config.Ped[i]);
-        LOAD_VAL_MOVEMENT("Ped", config.Ped[i].Movement);
-        LOAD_VAL_HORIZON("Ped", config.Ped[i].HorizonLock);
-        LOAD_VAL_DOF("Ped", config.Ped[i].DoF);
-    };
-
-    config.Ped.clear();
-    for (int i = 0; i < 10; ++i) {
-        if (!ini.SectionExists("Ped" STR(i))) {
-            break;
-        }
-
-        fnAddPed(i);
-    }
-
-    if (config.Ped.empty()) {
-        LOG(WARN, "Empty Ped config section, creating default");
-        fnAddPed(0);
+    if (config.CamIndex >= config.Mount.size()) {
+        LOG(WARN, "[Config] CamIndex out of range ({}), reset to {}",
+            config.CamIndex,
+            config.Mount.size() - 1);
+        config.CamIndex = static_cast<int>(config.Mount.size()) - 1;
     }
 
     return config;
@@ -282,9 +272,7 @@ bool CConfig::Write(const std::string& newName, Hash model, std::string plate, E
 
         ini.SetValue("ID", "ModelHash", std::format("{:X}", ModelHash).c_str());
 
-        auto& asCache = ASCache::Get();
-        auto it = asCache.find(ModelHash);
-        std::string modelName = it == asCache.end() ? std::string() : it->second;
+        std::string modelName = ASCache::GetCachedModelName(ModelHash);
         if (!modelName.empty()) {
             ModelName = modelName;
             ini.SetValue("ID", "ModelName", modelName.c_str());
@@ -298,14 +286,7 @@ bool CConfig::Write(const std::string& newName, Hash model, std::string plate, E
 
     // [Main]
     SAVE_VAL("Main", "Enable", Enable);
-
-    if (MountPoint == EMount::Ped)
-        SetValue(ini, "Main", "MountPoint", "Ped");
-    else
-        SetValue(ini, "Main", "MountPoint", "Vehicle");
-
-    SAVE_VAL("Main", "MountIdPed", MountIdPed);
-    SAVE_VAL("Main", "MountIdVehicle", MountIdVehicle);
+    SAVE_VAL("Main", "CamIndex", CamIndex);
 
     // [Look]
     SAVE_VAL("Look", "LookTime", Look.LookTime);
@@ -313,20 +294,12 @@ bool CConfig::Write(const std::string& newName, Hash model, std::string plate, E
     SAVE_VAL("Look", "MouseCenterTimeout", Look.MouseCenterTimeout);
     SAVE_VAL("Look", "MouseSensitivity", Look.MouseSensitivity);
 
-    // [Vehicle0-9]
-    for (int i = 0; i < Vehicle.size(); ++i) {
-        SAVE_VAL_CAMERA("Vehicle" STR(i), Vehicle[i]);
-        SAVE_VAL_MOVEMENT("Vehicle", Vehicle[i].Movement);
-        SAVE_VAL_HORIZON("Vehicle", Vehicle[i].HorizonLock);
-        SAVE_VAL_DOF("Vehicle", Vehicle[i].DoF);
-    }
-
-    // [Ped0-9]
-    for (int i = 0; i < Ped.size(); ++i) {
-        SAVE_VAL_CAMERA("Ped" STR(i), Ped[i]);
-        SAVE_VAL_MOVEMENT("Ped", Ped[i].Movement);
-        SAVE_VAL_HORIZON("Ped", Ped[i].HorizonLock);
-        SAVE_VAL_DOF("Ped", Ped[i].DoF);
+    // [Mount0-9]
+    for (int i = 0; i < Mount.size(); ++i) {
+        SAVE_VAL_CAMERA(    "Mount" STR(i),             Mount[i]);
+        SAVE_VAL_MOVEMENT(  "Mount" STR(i) ".Movement", Mount[i].Movement);
+        SAVE_VAL_HORIZON(   "Mount" STR(i) ".Horizon",  Mount[i].HorizonLock);
+        SAVE_VAL_DOF(       "Mount" STR(i) ".DoF",      Mount[i].DoF);
     }
 
     result = ini.SaveFile(configFile.c_str());

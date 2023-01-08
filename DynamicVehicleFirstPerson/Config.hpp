@@ -11,12 +11,6 @@ public:
         GenericNone,    // [ID] writes none
     };
 
-    CConfig() = default;
-    static CConfig Read(const std::string& configFile);
-
-    void Write(ESaveType saveType);
-    bool Write(const std::string& newName, Hash model, std::string plate, ESaveType saveType);
-
     struct SMovement {
         bool Follow = true;
         float RotationDirectionMult = 0.50f;
@@ -93,7 +87,14 @@ public:
         float FarOutFocusMaxSpeedDist = 10000.0f; // Max blur > 10km
     };
 
+    enum class EMountPoint {
+        Vehicle,
+        Ped
+    };
+
     struct SCameraSettings {
+        EMountPoint MountPoint = EMountPoint::Vehicle;
+
         float FOV = 55.0f;
         float OffsetHeight = 0.04f;
         float OffsetForward = 0.05f;
@@ -104,10 +105,11 @@ public:
         SDoF DoF;
     };
 
-    enum class EMount {
-        Vehicle,
-        Ped
-    };
+    CConfig() = default;
+    static CConfig Read(const std::string& configFile);
+
+    void Write(ESaveType saveType);
+    bool Write(const std::string& newName, Hash model, std::string plate, ESaveType saveType);
 
     std::string Name;
 
@@ -118,11 +120,7 @@ public:
 
     // Main
     bool Enable = true;
-
-    // Always one Ped/Vehicle, max [9]
-    EMount MountPoint = EMount::Vehicle;
-    int MountIdPed = 1;
-    int MountIdVehicle = 1;
+    int CamIndex = 0;
 
     // Look
     struct {
@@ -132,9 +130,6 @@ public:
         float MouseSensitivity = 0.3f;
     } Look;
 
-    // [Vehicle0-9]
-    std::vector<SCameraSettings> Vehicle;
-
-    // [Ped0-9]
-    std::vector<SCameraSettings> Ped;
+    // [Mount0-9]
+    std::vector<SCameraSettings> Mount;
 };

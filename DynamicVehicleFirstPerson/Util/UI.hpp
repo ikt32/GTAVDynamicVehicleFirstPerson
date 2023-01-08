@@ -6,5 +6,7 @@
 namespace UI {
     void Notify(const std::string& message);
     void Notify(const std::string& message, bool removePrevious);
+
+    void ShowHelpText(const std::string& message);
 }
 

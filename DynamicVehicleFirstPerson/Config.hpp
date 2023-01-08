@@ -46,6 +46,7 @@ public:
         float VertDownLimit = 0.06f;
 
         float Roughness = 1.0f;
+        float Bump = 0.0f;
     };
 
     struct SHorizonLock {

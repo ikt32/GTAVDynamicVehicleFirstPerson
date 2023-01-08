@@ -7,9 +7,18 @@ namespace {
     HMODULE DismembermentModule = nullptr;
     void(*Dismemberment_AddBoneDraw)(int handle, int start, int end) = nullptr;
     void(*Dismemberment_RemoveBoneDraw)(int handle) = nullptr;
+
+    HMODULE MTModule = nullptr;
+    bool(*MT_LookingLeft)() = nullptr;
+    bool(*MT_LookingRight)() = nullptr;
 }
 
 namespace Dismemberment {
+    void Setup();
+    void Cleanup();
+}
+
+namespace MT {
     void Setup();
     void Cleanup();
 }
@@ -27,10 +36,12 @@ T CheckAddr(HMODULE lib, const std::string& funcName) {
 
 void Compatibility::Setup() {
     Dismemberment::Setup();
+    MT::Setup();
 }
 
 void Compatibility::Cleanup() {
     Dismemberment::Cleanup();
+    MT::Cleanup();
 }
 
 void Dismemberment::Setup() {
@@ -64,4 +75,39 @@ void Dismemberment::AddBoneDraw(int handle, int start, int end) {
 void Dismemberment::RemoveBoneDraw(int handle) {
     if (Dismemberment_RemoveBoneDraw)
         Dismemberment_RemoveBoneDraw(handle);
+}
+
+void MT::Setup() {
+    LOG(INFO, "[Compat] Setting up Manual Transmission");
+    MTModule = GetModuleHandle("Gears.asi");
+    if (!MTModule) {
+        LOG(INFO, "[Compat] Gears.asi not found");
+        return;
+    }
+
+    MT_LookingLeft = CheckAddr<bool(*)()>(MTModule, "MT_LookingLeft");
+    MT_LookingRight = CheckAddr<bool(*)()>(MTModule, "MT_LookingRight");
+}
+
+void MT::Cleanup() {
+    MTModule = nullptr;
+    MT_LookingLeft = nullptr;
+    MT_LookingRight = nullptr;
+}
+
+bool MT::Available() {
+    return MT_LookingLeft != nullptr &&
+        MT_LookingRight != nullptr;
+}
+
+bool MT::LookingLeft() {
+    if (MT_LookingLeft)
+        return MT_LookingLeft();
+    return false;
+}
+
+bool MT::LookingRight() {
+    if (MT_LookingRight)
+        return MT_LookingRight();
+    return false;
 }

@@ -83,6 +83,11 @@ std::vector<CScriptMenu<CFPVScript>::CSubmenu> FPV::BuildMenu() {
 
             mbCtx.MenuOption("Manage configs", "cfg.manage.menu",
                 { "Create a new config or view other configs." });
+
+            if (FPV::GetSettings().Debug.Enable) {
+                mbCtx.MenuOption("Debug", "debug.menu",
+                    { "Yeah." });
+            }
         });
 
     submenus.emplace_back("cfg.manage.menu",
@@ -265,6 +270,13 @@ std::vector<CScriptMenu<CFPVScript>::CSubmenu> FPV::BuildMenu() {
                 { "How rough the camera movement is, from inertia effects.",
                   "Larger values increase roughness, causing smaller bumps to be more noticeable.",
                   "Smaller values increase smoothness, but may cause the movement to be less responsive." });
+
+            bool bumpTrigger = mbCtx.FloatOptionCb("Bump severity", movement.Bump, 0.0f, 10.0f, 0.5f, GetKbEntryFloat,
+                { "How much the vehicle itself responds to bumps.",
+                  "Recommended to set this to 0, as the vehicle body moving around is just a visual effect." });
+            if (bumpTrigger) {
+                VEHICLE::SET_CAR_HIGH_SPEED_BUMP_SEVERITY_MULTIPLIER(movement.Bump);
+            }
         });
 
     submenus.emplace_back("inertia.rot.menu",
@@ -530,6 +542,34 @@ std::vector<CScriptMenu<CFPVScript>::CSubmenu> FPV::BuildMenu() {
                 0.0f, 10.0f, 0.01f, GetKbEntryFloat,
                 { "Modifier for blur reduction when at or above 'TargetAccelMaxDoF' acceleration.",
                   "Default: 1.0, at high acceleration the near blur is as far forward as decided by the speed." });
+        });
+
+    submenus.emplace_back("debug.menu",
+        [](NativeMenu::Menu& mbCtx, CFPVScript& context) {
+            mbCtx.Title("Debug");
+            mbCtx.Subtitle("(:");
+
+            if (mbCtx.BoolOption("Disable FPV head hiding", FPV::GetSettings().Debug.DisableRemoveHead,
+                { "Disables hiding player head with CamxxCore's DismembermentASI.asi present." })) {
+                context.HideHead(!FPV::GetSettings().Debug.DisableRemoveHead);
+            }
+
+            mbCtx.BoolOption("Disable FPV props removal", FPV::GetSettings().Debug.DisableRemoveProps,
+                { "Disables removing temporarily removing props (head, eyes) from the player's head.",
+                  "Toggle when not in custom FPV, otherwise props may be lost." });
+
+            mbCtx.BoolOption("Override FPV near clip", FPV::GetSettings().Debug.NearClip.Override,
+                { "Overrides near clip to always use the value below." });
+
+            mbCtx.FloatOptionCb("FPV near clip", FPV::GetSettings().Debug.NearClip.Distance, 0.0f, 10.0f, 0.05f, GetKbEntryFloat);
+
+            mbCtx.BoolOption("Override DoF", FPV::GetSettings().Debug.DoF.Override,
+                { "When DoF is enabled for the FPV camera, temporarily override it with the values below.",
+                  "May be useful to tweak distances for different vehicles." });
+            mbCtx.FloatOptionCb("NearOutFocus", FPV::GetSettings().Debug.DoF.NearOutFocus, 0.0f, 100000.0f, 0.05f, GetKbEntryFloat);
+            mbCtx.FloatOptionCb("NearInFocus", FPV::GetSettings().Debug.DoF.NearInFocus, 0.0f, 100000.0f, 0.05f, GetKbEntryFloat);
+            mbCtx.FloatOptionCb("FarInFocus", FPV::GetSettings().Debug.DoF.FarInFocus, 0.0f, 100000.0f, 1.00f, GetKbEntryFloat);
+            mbCtx.FloatOptionCb("FarOutFocus", FPV::GetSettings().Debug.DoF.FarOutFocus, 0.0f, 100000.0f, 1.00f, GetKbEntryFloat);
         });
 
     return submenus;

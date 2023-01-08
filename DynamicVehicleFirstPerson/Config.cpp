@@ -75,6 +75,7 @@ CConfig::EMountPoint GetValue(CSimpleIniA& ini, const char* section, const char*
     SAVE_VAL(section, "VertUpLimit",       ##source.VertUpLimit); \
     SAVE_VAL(section, "VertDownLimit",     ##source.VertDownLimit); \
     SAVE_VAL(section, "Roughness",         ##source.Roughness); \
+    SAVE_VAL(section, "Bump",              ##source.Bump); \
 }
 
 #define LOAD_VAL_MOVEMENT(section, source) { \
@@ -101,6 +102,7 @@ CConfig::EMountPoint GetValue(CSimpleIniA& ini, const char* section, const char*
     LOAD_VAL(section, "VertUpLimit",       ##source.VertUpLimit); \
     LOAD_VAL(section, "VertDownLimit",     ##source.VertDownLimit); \
     LOAD_VAL(section, "Roughness",         ##source.Roughness); \
+    LOAD_VAL(section, "Bump",              ##source.Bump); \
 }
 
 #define SAVE_VAL_HORIZON(section, source) { \

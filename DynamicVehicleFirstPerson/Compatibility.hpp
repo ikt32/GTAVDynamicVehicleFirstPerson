@@ -11,3 +11,10 @@ namespace Dismemberment {
     void AddBoneDraw(int handle, int start, int end);
     void RemoveBoneDraw(int handle);
 }
+
+namespace MT {
+    bool Available();
+
+    bool LookingLeft();
+    bool LookingRight();
+}

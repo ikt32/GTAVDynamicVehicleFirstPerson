@@ -2,6 +2,7 @@
 #include "Compatibility.hpp"
 #include "Config.hpp"
 #include "ScriptSettings.hpp"
+#include "VehicleMetaData.hpp"
 #include "Util/Timer.hpp"
 
 #include <inc/types.h>
@@ -23,10 +24,27 @@ public:
 
     void Tick();
     void Cancel();
+
+    void HideHead(bool remove) { hideHead(remove); }
 private:
     void update();
     
+    void init();
     void hideHead(bool remove);
+
+    void updateControllerLook(bool& lookingIntoGlass);
+    void updateMouseLook(bool& lookingIntoGlass);
+    void updateWheelLook(bool& lookingIntoGlass);
+
+    void updateRotationCameraMovement(const CConfig::SMovement& movement);
+    void updateLongitudinalCameraMovement(const CConfig::SMovement& movement);
+    void updateLateralCameraMovement(const CConfig::SMovement& movement);
+    void updateVerticalCameraMovement(const CConfig::SMovement& movement);
+    void updatePitchCameraMovement(const CConfig::SMovement& movement);
+    void updateDoF(const CConfig::SDoF& dof);
+
+    Vector3 getLeanOffset(bool lookingIntoGlass) const;
+    Vector3 getHorizonLockRotation();
 
     // Config management
     const std::shared_ptr<CScriptSettings>& mSettings;
@@ -38,6 +56,8 @@ private:
     unsigned mFpvCamOffsetXOffset = 0x450;
 
     Vehicle mVehicle;
+    // Just create a new one each time mVehicle changes
+    CVehicleMetaData mVehicleData;
 
     Cam mHandle = -1;
 
@@ -53,9 +73,12 @@ private:
 
     // forward camera movement
     Vector3 mInertiaMove{};
-    float mInertiaAccelPitchDeg = 0.0f;
 
-    float mDynamicPitchDeg = 0.0f;
+    // in degrees
+    float mInertiaPitch = 0.0f;
+
+    // in degrees
+    float mDynamicPitch = 0.0f;
 
     bool mHeadRemoved = false;
     int savedHeadProp = -1;
@@ -64,4 +87,12 @@ private:
     int savedEyesPropTx = -1;
 
     float mAverageAccel = 0.0f;
+
+    // For Manual Transmission
+    // Figure out which side to look "back" with:
+    // When the LookRight is pressed first, and then LookLeft is pressed
+    // camera should look back over the right shoulder - otherwise left shoulder.
+    bool mMTLookRightPrev = false;
+    bool mMTLookLeftPrev = false;
+    bool mMTLookBackRightShoulder = false;
 };

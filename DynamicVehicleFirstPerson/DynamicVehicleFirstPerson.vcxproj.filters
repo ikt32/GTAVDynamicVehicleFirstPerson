@@ -49,6 +49,13 @@
       <Filter>Util</Filter>
     </ClCompile>
     <ClCompile Include="Compatibility.cpp" />
+    <ClCompile Include="VehicleMetaData.cpp" />
+    <ClCompile Include="Memory\MemoryAccess.cpp">
+      <Filter>Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="Memory\VehicleExtensions.cpp">
+      <Filter>Memory</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Script.hpp" />
@@ -123,7 +130,19 @@
       <Filter>Util</Filter>
     </ClInclude>
     <ClInclude Include="Compatibility.hpp" />
-    <ClInclude Include="Enums.hpp" />
+    <ClInclude Include="Util\Math.hpp">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="VehicleMetaData.hpp" />
+    <ClInclude Include="Util\Enums.hpp">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Memory\MemoryAccess.hpp">
+      <Filter>Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="Memory\VehicleExtensions.hpp">
+      <Filter>Memory</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Util">
@@ -149,6 +168,9 @@
     </Filter>
     <Filter Include="Info">
       <UniqueIdentifier>{b456ee42-7020-4fb5-8bea-49dbdfee208a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Memory">
+      <UniqueIdentifier>{64549c3f-af30-4efd-a1a2-ed86ef4e9497}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

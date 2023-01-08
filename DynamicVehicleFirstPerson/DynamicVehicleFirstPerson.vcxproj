@@ -113,6 +113,9 @@
     <ClCompile Include="..\thirdparty\GTAVMenuBase\menuutils.cpp" />
     <ClCompile Include="Compatibility.cpp" />
     <ClCompile Include="Config.cpp" />
+    <ClCompile Include="Memory\MemoryAccess.cpp" />
+    <ClCompile Include="Memory\VehicleExtensions.cpp" />
+    <ClCompile Include="VehicleMetaData.cpp" />
     <ClCompile Include="DllMain.cpp" />
     <ClCompile Include="FPVScript.cpp" />
     <ClCompile Include="Script.cpp" />
@@ -146,7 +149,10 @@
     <ClInclude Include="Compatibility.hpp" />
     <ClInclude Include="Config.hpp" />
     <ClInclude Include="Constants.hpp" />
-    <ClInclude Include="Enums.hpp" />
+    <ClInclude Include="Memory\MemoryAccess.hpp" />
+    <ClInclude Include="Memory\VehicleExtensions.hpp" />
+    <ClInclude Include="Util\Enums.hpp" />
+    <ClInclude Include="VehicleMetaData.hpp" />
     <ClInclude Include="FPVMenuUtils.hpp" />
     <ClInclude Include="FPVScript.hpp" />
     <ClInclude Include="Script.hpp" />
@@ -155,6 +161,7 @@
     <ClInclude Include="SettingsCommon.hpp" />
     <ClInclude Include="Util\AddonSpawnerCache.hpp" />
     <ClInclude Include="Util\Logger.hpp" />
+    <ClInclude Include="Util\Math.hpp" />
     <ClInclude Include="Util\Paths.hpp" />
     <ClInclude Include="Util\ScriptUtils.hpp" />
     <ClInclude Include="Util\Strings.hpp" />

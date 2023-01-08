@@ -1,5 +1,9 @@
 #include "Script.hpp"
+
 #include "ScriptMenu.hpp"
+#include "Memory/MemoryAccess.hpp"
+#include "Memory/VehicleExtensions.hpp"
+
 #include "Util/Logger.hpp"
 #include "Util/Paths.hpp"
 #include "Util/UI.hpp"
@@ -44,6 +48,9 @@ void FPV::scriptInit() {
     settings = std::make_shared<CScriptSettings>(settingsGeneralPath.string());
     settings->Load();
     LOG(INFO, "Settings loaded");
+
+    Memory::Init();
+    VehicleExtensions::Init();
 
     LoadConfigs();
 

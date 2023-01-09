@@ -9,9 +9,9 @@ namespace {
 
 void VehicleExtensions::Init() {
     // alloc8or
-    auto addr = Memory::FindPattern("F3 0F 11 B3 ? ? ? ? 44 48 ? ? ? ? ? 48 85 C9");
+    auto addr = Memory::FindPattern("F3 0F 11 B3 ? ? ? ? 44 88 ? ? ? ? ? 48 85 C9");
     hoverTransformRatioOffset = addr == 0 ? 0 : *(int*)(addr + 4);
-    LOG(hoverTransformRatioOffset == 0 ? WARN : DEBUG, "[VExt] Hover Transform Active Offset: 0x%X", hoverTransformRatioOffset);
+    LOG(hoverTransformRatioOffset == 0 ? WARN : DEBUG, "[VExt] Hover Transform Active Offset: 0x{:03X}", hoverTransformRatioOffset);
 }
 
 float VehicleExtensions::GetHoverTransformRatio(Vehicle handle) {

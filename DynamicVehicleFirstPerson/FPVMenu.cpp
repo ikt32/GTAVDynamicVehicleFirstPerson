@@ -60,6 +60,12 @@ std::vector<CScriptMenu<CFPVScript>::CSubmenu> FPV::BuildMenu() {
                     { "No config is active.",
                       "Camera options unavailable." });
             }
+            else if (context.ActiveConfig()->Mount.empty()) {
+                mbCtx.Option("~c~Corrupt config",
+                    { std::format("Config '{}' contains 0 cameras, but should contain at least 1.",
+                        context.ActiveConfig()->Name),
+                      "Camera options unavailable." });
+            }
             else {
                 CConfig* cfg = context.ActiveConfig();
                 mbCtx.OptionPlus("Config info", FPV::FormatConfigInfo(*cfg));
@@ -75,7 +81,7 @@ std::vector<CScriptMenu<CFPVScript>::CSubmenu> FPV::BuildMenu() {
                     }
                 };
 
-                mbCtx.OptionPlus(std::format("Select camera <{}>", cfg->CamIndex),
+                mbCtx.OptionPlus(std::format("Select camera <{}: {}>", cfg->Mount[cfg->CamIndex].Name, cfg->CamIndex + 1),
                     FormatCameraInfo(*cfg, cfg->CamIndex),
                     nullptr, onRight, onLeft, "Camera info",
                     { "Switch cameras for different viewpoints." });
@@ -128,7 +134,7 @@ std::vector<CScriptMenu<CFPVScript>::CSubmenu> FPV::BuildMenu() {
             for (const auto& config : FPV::GetConfigs()) {
                 bool selected;
                 bool triggered = mbCtx.OptionPlus(config.Name, {}, &selected, nullptr, nullptr, "",
-                    { "Press enter/select to create a new config"
+                    { "Press enter/select to create a new config "
                         "based on currently selected config." });
 
                 if (selected) {
@@ -146,9 +152,7 @@ std::vector<CScriptMenu<CFPVScript>::CSubmenu> FPV::BuildMenu() {
         [](NativeMenu::Menu& mbCtx, CFPVScript& context) {
             mbCtx.Title("Camera settings");
             CConfig* config = context.ActiveConfig();
-            mbCtx.Subtitle(std::format("Config: {}", config ? config->Name : "None"));
-            if (config == nullptr) {
-                mbCtx.Option("No active vehicle/configuration");
+            if (!CreateCameraSubtitle(mbCtx, config)) {
                 return;
             }
 
@@ -571,9 +575,10 @@ std::vector<CScriptMenu<CFPVScript>::CSubmenu> FPV::BuildMenu() {
             }
 
             for (int i = 0; i < config->Mount.size(); ++i) {
-                auto cameraName = std::format("{} {}",
+                auto cameraName = config->Mount[i].Name;
+                auto optionName = std::format("{} {}",
                     config->CamIndex == i ? "> " : "",
-                    config->Mount[i].Name);
+                    cameraName);
 
                 bool orderChanged = false;
                 auto onLeft = [&]() {
@@ -596,7 +601,7 @@ std::vector<CScriptMenu<CFPVScript>::CSubmenu> FPV::BuildMenu() {
                 };
 
                 bool selected;
-                bool triggered = mbCtx.OptionPlus(cameraName,
+                bool triggered = mbCtx.OptionPlus(optionName,
                     {}, &selected, onRight, onLeft, "",
                     { "Press enter to copy this camera, or to remove it.",
                       "Press left to increase priority, right to decrease it." });

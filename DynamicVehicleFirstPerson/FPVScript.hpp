@@ -49,7 +49,6 @@ private:
     // Config management
     const std::shared_ptr<CScriptSettings>& mSettings;
     std::vector<CConfig>& mConfigs;
-    CConfig& mDefaultConfig;
     CConfig* mActiveConfig = nullptr;
 
     // Correct offset for <1290 on load

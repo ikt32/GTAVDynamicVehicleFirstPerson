@@ -188,7 +188,7 @@ CConfig CConfig::Read(const std::string& configFile) {
     }
 
     config.Name = std::filesystem::path(configFile).stem().string();
-    LOG(INFO, "[Config] Reading {}", config.Name);
+    LOG(DEBUG, "[Config] Reading {}", config.Name);
 
     // [ID]
     std::string modelNamesAll = ini.GetValue("ID", "Models", "");
@@ -250,14 +250,17 @@ CConfig CConfig::Read(const std::string& configFile) {
     for (const auto& section : allSections) {
         std::string sectionName = section.pItem;
         if (sectionName.starts_with("Mount") &&
+            !sectionName.ends_with(".Lean") &&
             !sectionName.ends_with(".Movement") &&
             !sectionName.ends_with(".Horizon") &&
             !sectionName.ends_with(".DoF")) {
-            if (std::find(mountNames.begin(), mountNames.end(), sectionName) != mountNames.end()) {
+
+            std::string configName = sectionName.substr(strlen("Mount"));
+            if (std::find(mountNames.begin(), mountNames.end(), configName) != mountNames.end()) {
                 LOG(ERROR, "[Config] Section name '{}' is duplicated. Skipping config...");
                 return {};
             }
-            mountNames.push_back(sectionName);
+            mountNames.push_back(configName);
         }
     }
 
@@ -266,15 +269,28 @@ CConfig CConfig::Read(const std::string& configFile) {
         fnAddMount(mountName);
     }
 
+    if (config.Mount.size() > 1) {
+        std::sort(config.Mount.begin(), config.Mount.end(),
+            [](const SCameraSettings& cam1, const SCameraSettings& cam2)->bool {
+                return cam1.Order < cam2.Order;
+            });
+
+        auto duplicate = std::adjacent_find(config.Mount.begin(), config.Mount.end(),
+            [](const auto& mount1, const auto& mount2) {
+                return mount1.Order == mount2.Order;
+            }
+        );
+        while (config.Mount.size() > 1 && duplicate != config.Mount.end()) {
+            LOG(ERROR, "[Config] Duplicate Order found in Mount '{}': {}, removed",
+                duplicate->Name, duplicate->Order);
+            config.Mount.erase(duplicate);
+        }
+    }
+
     if (config.Mount.empty()) {
         LOG(WARN, "[Config] Empty Mount config section, creating default");
         fnAddMount("Default");
     }
-
-    std::sort(config.Mount.begin(), config.Mount.end(),
-        [](const SCameraSettings& cam1, const SCameraSettings& cam2)->bool {
-            return cam1.Order < cam2.Order;
-        });
 
     if (config.CamIndex >= config.Mount.size()) {
         LOG(WARN, "[Config] CamIndex out of range ({}), reset to {}",
@@ -283,6 +299,7 @@ CConfig CConfig::Read(const std::string& configFile) {
         config.CamIndex = static_cast<int>(config.Mount.size()) - 1;
     }
 
+    LOG(DEBUG, "[Config] Loaded {}", config.Name);
     return config;
 }
 
@@ -305,6 +322,8 @@ bool CConfig::Write(const std::string& newName, Hash model, std::string plate, E
         LOG(WARN, "[Config] {} Failed to load, SI_Error [{}]. (No problem if no file exists yet)",
             configFile.string(), result);
     }
+
+    LOG(DEBUG, "[Config] Saving {}", Name);
 
     // [ID]
     if (saveType != ESaveType::GenericNone) {
@@ -348,8 +367,11 @@ bool CConfig::Write(const std::string& newName, Hash model, std::string plate, E
 
     result = ini.SaveFile(configFile.c_str());
     CHECK_LOG_SI_ERROR(result, "save", configFile.string());
-    if (result < 0)
+    if (result < 0) {
+        LOG(ERROR, "[Config] Failed to save {}", Name);
         return false;
+    }
+    LOG(DEBUG, "[Config] Saved {}", Name);
     return true;
 }
 

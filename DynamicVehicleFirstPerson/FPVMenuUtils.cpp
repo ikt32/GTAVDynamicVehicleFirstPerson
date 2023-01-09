@@ -109,7 +109,8 @@ std::vector<std::string> FPV::FormatConfigInfo(const CConfig& cfg) {
         "No plate" : cfg.Plate;
     return {
         std::format("~h~{}", cfg.Name),
-        std::format("Model/Plate: {}/[{}]", modelName, plate),
+        std::format("Model: {}", modelName),
+        std::format("Plate: [{}]", plate),
         std::format("Cameras: {}", cfg.Mount.size())
     };
 }
@@ -133,7 +134,7 @@ std::vector<std::string> FPV::FormatCameraInfo(const CConfig& cfg, int camIndex)
     }
 
     return {
-        std::format("Camera {}/{}", cfg.CamIndex, cfg.Mount.size()-1),
+        std::format("Camera {}/{}", cfg.CamIndex + 1, cfg.Mount.size()),
         std::format("FOV: {:.1f}", cfg.Mount[cfg.CamIndex].FOV),
         std::format("Horizon lock: {}", horizonLock),
         std::format("Inertia: {}", cfg.Mount[cfg.CamIndex].Movement.Follow ? "Yes" : "No"),

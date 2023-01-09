@@ -137,9 +137,14 @@ uint32_t FPV::LoadConfigs() {
     if (configs.empty() ||
         !configs.empty() && !StrUtil::Strcmpwi(configs[0].Name, "Default")) {
         LOG(WARN, "No default config found, generating a default one and saving it...");
-        CConfig defaultConfig;
+        CConfig defaultConfig{};
         defaultConfig.Name = "Default";
-        defaultConfig.Mount.push_back(CConfig::SCameraSettings{});
+
+        defaultConfig.Mount.push_back(CConfig::SCameraSettings{
+                .Name = "Default",
+                .Order = 0
+            }
+        );
         configs.insert(configs.begin(), defaultConfig);
         defaultConfig.Write(CConfig::ESaveType::GenericNone);
     }
@@ -163,11 +168,17 @@ void FPV::SaveConfigs() {
     }
 
     for (auto& config : configs) {
-        if (!config.ModelName.empty()) {
-            auto saveType = config.Plate.empty() ?
-                CConfig::ESaveType::GenericModel :
-                CConfig::ESaveType::Specific;
-            config.Write(saveType);
+        CConfig::ESaveType saveType;
+        if (config.Name == "Default") {
+            saveType = CConfig::ESaveType::GenericNone;
         }
+        else if (config.Plate.empty()) {
+            saveType = CConfig::ESaveType::GenericModel;
+        }
+        else {
+            saveType = CConfig::ESaveType::Specific;
+        }
+
+        config.Write(saveType);
     }
 }

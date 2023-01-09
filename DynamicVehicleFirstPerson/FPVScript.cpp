@@ -16,7 +16,6 @@
 CFPVScript::CFPVScript(const std::shared_ptr<CScriptSettings>& settings, std::vector<CConfig>& configs)
     : mSettings(settings)
     , mConfigs(configs)
-    , mDefaultConfig(configs[0])
     , mVehicle(0)
     , mVehicleData(mVehicle)
     , mLookResetTimer(500) {
@@ -27,8 +26,12 @@ CFPVScript::CFPVScript(const std::shared_ptr<CScriptSettings>& settings, std::ve
 }
 
 void CFPVScript::UpdateActiveConfig() {
+    if (mConfigs.empty()) {
+        // Should NOT occur, like, ever, but still.
+        return;
+    }
     if (!ENTITY::DOES_ENTITY_EXIST(mVehicle)) {
-        mActiveConfig = &mDefaultConfig;
+        mActiveConfig = &mConfigs[0];
         return;
     }
 
@@ -53,7 +56,7 @@ void CFPVScript::UpdateActiveConfig() {
 
     // third pass - use default
     if (foundConfig == mConfigs.end()) {
-        mActiveConfig = &mDefaultConfig;
+        mActiveConfig = &mConfigs[0];
     }
     else {
         mActiveConfig = &*foundConfig;

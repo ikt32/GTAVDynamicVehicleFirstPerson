@@ -1,6 +1,5 @@
 #include "Config.hpp"
 
-#include "Constants.hpp"
 #include "SettingsCommon.hpp"
 #include "Util/AddonSpawnerCache.hpp"
 #include "Util/Logger.hpp"
@@ -27,13 +26,13 @@
         option = GetValue(ini, section, key, option);\
     }
 
-void SetValue(CSimpleIniA & ini, const char* section, const char* key, CConfig::EMountPoint val) {
-    ini.SetLongValue(section, key, static_cast<int>(val));
+void SetValue(CSimpleIniA & ini, const std::string& section, const char* key, CConfig::EMountPoint val) {
+    ini.SetLongValue(section.c_str(), key, static_cast<int>(val));
 }
 
-CConfig::EMountPoint GetValue(CSimpleIniA& ini, const char* section, const char* key, CConfig::EMountPoint val) {
-    int outVal = ini.GetLongValue(section, key, static_cast<int>(val));
-    if (outVal != 0 || outVal != 1) {
+CConfig::EMountPoint GetValue(CSimpleIniA& ini, const std::string& section, const char* key, CConfig::EMountPoint val) {
+    int outVal = ini.GetLongValue(section.c_str(), key, static_cast<int>(val));
+    if (outVal != 0 && outVal != 1) {
         return CConfig::EMountPoint::Vehicle;
     }
     return static_cast<CConfig::EMountPoint>(outVal);
@@ -158,6 +157,7 @@ CConfig::EMountPoint GetValue(CSimpleIniA& ini, const char* section, const char*
 }
 
 #define SAVE_VAL_CAMERA(section, source) { \
+    SAVE_VAL(section, "Order",         ##source.Order); \
     SAVE_VAL(section, "MountPoint",    ##source.MountPoint); \
     SAVE_VAL(section, "FOV",           ##source.FOV); \
     SAVE_VAL(section, "OffsetHeight",  ##source.OffsetHeight); \
@@ -167,6 +167,7 @@ CConfig::EMountPoint GetValue(CSimpleIniA& ini, const char* section, const char*
 }
 
 #define LOAD_VAL_CAMERA(section, source) { \
+    LOAD_VAL(section, "Order",         ##source.Order); \
     LOAD_VAL(section, "MountPoint",    ##source.MountPoint); \
     LOAD_VAL(section, "FOV",           ##source.FOV); \
     LOAD_VAL(section, "OffsetHeight",  ##source.OffsetHeight); \
@@ -182,8 +183,12 @@ CConfig CConfig::Read(const std::string& configFile) {
     ini.SetUnicode();
     SI_Error result = ini.LoadFile(configFile.c_str());
     CHECK_LOG_SI_ERROR(result, "load", configFile.c_str());
+    if (result < 0) {
+        return {};
+    }
 
     config.Name = std::filesystem::path(configFile).stem().string();
+    LOG(INFO, "[Config] Reading {}", config.Name);
 
     // [ID]
     std::string modelNamesAll = ini.GetValue("ID", "Models", "");
@@ -225,29 +230,51 @@ CConfig CConfig::Read(const std::string& configFile) {
     LOAD_VAL("Look", "MouseCenterTimeout", config.Look.MouseCenterTimeout);
     LOAD_VAL("Look", "MouseSensitivity", config.Look.MouseSensitivity);
 
-    // [Mount0-9]
-    auto fnAddMount = [&](int i) {
-        config.Mount.push_back(SCameraSettings{});
-        LOAD_VAL_CAMERA(    "Mount" STR(i),             config.Mount[i]);
-        LOAD_VAL_LEAN(      "Mount" STR(i) ".Lean",     config.Mount[i].Lean);
-        LOAD_VAL_MOVEMENT(  "Mount" STR(i) ".Movement", config.Mount[i].Movement);
-        LOAD_VAL_HORIZON(   "Mount" STR(i) ".Horizon",  config.Mount[i].HorizonLock);
-        LOAD_VAL_DOF(       "Mount" STR(i) ".DoF",      config.Mount[i].DoF);
+    // [Mount<Name>]
+    auto fnAddMount = [&](const std::string& name) {
+        config.Mount.push_back(SCameraSettings{
+            .Name = name
+        });
+        auto& mount = config.Mount.back();
+        LOAD_VAL_CAMERA(  std::format("Mount{}", name),          mount);
+        LOAD_VAL_LEAN(    std::format("Mount{}.Lean", name),     mount.Lean);
+        LOAD_VAL_MOVEMENT(std::format("Mount{}.Movement", name), mount.Movement);
+        LOAD_VAL_HORIZON( std::format("Mount{}.Horizon", name),  mount.HorizonLock);
+        LOAD_VAL_DOF(     std::format("Mount{}.DoF", name),      mount.DoF);
     };
 
-    config.Mount.clear();
-    for (int i = 0; i < 10; ++i) {
-        if (!ini.SectionExists("Mount" STR(i))) {
-            break;
-        }
+    std::list<CSimpleIniA::Entry> allSections;
+    ini.GetAllSections(allSections);
 
-        fnAddMount(i);
+    std::vector<std::string> mountNames;
+    for (const auto& section : allSections) {
+        std::string sectionName = section.pItem;
+        if (sectionName.starts_with("Mount") &&
+            !sectionName.ends_with(".Movement") &&
+            !sectionName.ends_with(".Horizon") &&
+            !sectionName.ends_with(".DoF")) {
+            if (std::find(mountNames.begin(), mountNames.end(), sectionName) != mountNames.end()) {
+                LOG(ERROR, "[Config] Section name '{}' is duplicated. Skipping config...");
+                return {};
+            }
+            mountNames.push_back(sectionName);
+        }
+    }
+
+    config.Mount.clear();
+    for (const auto& mountName : mountNames) {
+        fnAddMount(mountName);
     }
 
     if (config.Mount.empty()) {
         LOG(WARN, "[Config] Empty Mount config section, creating default");
-        fnAddMount(0);
+        fnAddMount("Default");
     }
+
+    std::sort(config.Mount.begin(), config.Mount.end(),
+        [](const SCameraSettings& cam1, const SCameraSettings& cam2)->bool {
+            return cam1.Order < cam2.Order;
+        });
 
     if (config.CamIndex >= config.Mount.size()) {
         LOG(WARN, "[Config] CamIndex out of range ({}), reset to {}",
@@ -309,13 +336,14 @@ bool CConfig::Write(const std::string& newName, Hash model, std::string plate, E
     SAVE_VAL("Look", "MouseCenterTimeout", Look.MouseCenterTimeout);
     SAVE_VAL("Look", "MouseSensitivity", Look.MouseSensitivity);
 
-    // [Mount0-9]
-    for (int i = 0; i < Mount.size(); ++i) {
-        SAVE_VAL_CAMERA(    "Mount" STR(i),             Mount[i]);
-        SAVE_VAL_LEAN(      "Mount" STR(i) ".Lean",     Mount[i].Lean);
-        SAVE_VAL_MOVEMENT(  "Mount" STR(i) ".Movement", Mount[i].Movement);
-        SAVE_VAL_HORIZON(   "Mount" STR(i) ".Horizon",  Mount[i].HorizonLock);
-        SAVE_VAL_DOF(       "Mount" STR(i) ".DoF",      Mount[i].DoF);
+    // [Mount<Name>]
+    for (const auto& mount : Mount) {
+        const auto& name = mount.Name;
+        SAVE_VAL_CAMERA(  std::format("Mount{}", name),          mount);
+        SAVE_VAL_LEAN(    std::format("Mount{}.Lean", name),     mount.Lean);
+        SAVE_VAL_MOVEMENT(std::format("Mount{}.Movement", name), mount.Movement);
+        SAVE_VAL_HORIZON( std::format("Mount{}.Horizon", name),  mount.HorizonLock);
+        SAVE_VAL_DOF(     std::format("Mount{}.DoF", name),      mount.DoF);
     }
 
     result = ini.SaveFile(configFile.c_str());
@@ -323,4 +351,32 @@ bool CConfig::Write(const std::string& newName, Hash model, std::string plate, E
     if (result < 0)
         return false;
     return true;
+}
+
+void CConfig::DeleteCamera(const std::string& camToDelete) {
+    const auto configsPath = Paths::GetModPath() / "Configs";
+    const auto configFile = configsPath / std::format("{}.ini", Name);
+
+    CSimpleIniA ini;
+    ini.SetUnicode();
+    ini.SetMultiLine(true);
+
+    // This here MAY fail on first save, in which case, it can be ignored.
+    // _Not_ having this just nukes the entire file, including any comments.
+    SI_Error result = ini.LoadFile(configFile.c_str());
+    if (result < 0) {
+        LOG(WARN, "[Config] {} Failed to load, SI_Error [{}]. (No problem if no file exists yet)",
+            configFile.string(), result);
+    }
+
+    std::erase_if(Mount, [camToDelete](const auto& mount) { return mount.Name == camToDelete; });
+
+    ini.Delete(std::format("Mount{}", camToDelete).c_str(), nullptr, true);
+    ini.Delete(std::format("Mount{}.Lean", camToDelete).c_str(), nullptr, true);
+    ini.Delete(std::format("Mount{}.Movement", camToDelete).c_str(), nullptr, true);
+    ini.Delete(std::format("Mount{}.Horizon", camToDelete).c_str(), nullptr, true);
+    ini.Delete(std::format("Mount{}.DoF", camToDelete).c_str(), nullptr, true);
+
+    result = ini.SaveFile(configFile.c_str());
+    CHECK_LOG_SI_ERROR(result, "save", configFile.string());
 }

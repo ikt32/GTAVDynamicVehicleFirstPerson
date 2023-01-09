@@ -51,6 +51,7 @@ void FPV::scriptInit() {
 
     Memory::Init();
     VehicleExtensions::Init();
+    Compatibility::Setup();
 
     LoadConfigs();
 
@@ -110,10 +111,8 @@ uint32_t FPV::LoadConfigs() {
     configs.clear();
 
     if (!(fs::exists(configsPath) && fs::is_directory(configsPath))) {
-        LOG(ERROR, "Directory [{}] not found!", configsPath.string());
-        configs.insert(configs.begin(), CConfig{});
-        FPV::updateActiveConfigs();
-        return 0;
+        LOG(WARN, "Directory [{}] not found!", configsPath.string());
+        fs::create_directories(configsPath);
     }
 
     for (const auto& file : fs::directory_iterator(configsPath)) {
@@ -123,6 +122,9 @@ uint32_t FPV::LoadConfigs() {
         }
 
         CConfig config = CConfig::Read(fs::path(file).string());
+        if (config.Name.empty()) {
+            continue;
+        }
         if (StrUtil::Strcmpwi(config.Name, "Default")) {
             configs.insert(configs.begin(), config);
             continue;
@@ -137,6 +139,7 @@ uint32_t FPV::LoadConfigs() {
         LOG(WARN, "No default config found, generating a default one and saving it...");
         CConfig defaultConfig;
         defaultConfig.Name = "Default";
+        defaultConfig.Mount.push_back(CConfig::SCameraSettings{});
         configs.insert(configs.begin(), defaultConfig);
         defaultConfig.Write(CConfig::ESaveType::GenericNone);
     }

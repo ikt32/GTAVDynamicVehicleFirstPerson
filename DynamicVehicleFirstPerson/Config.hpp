@@ -100,13 +100,16 @@ public:
     };
 
     struct SCameraSettings {
+        std::string Name;
+        int Order = 0;
+
         EMountPoint MountPoint = EMountPoint::Vehicle;
 
-        float FOV = 55.0f;
-        float OffsetHeight = 0.04f;
-        float OffsetForward = 0.05f;
-        float OffsetSide = 0.0f;
-        float Pitch = 0.0f;
+        float FOV = 56.0f;
+        float OffsetHeight = 0.00f;
+        float OffsetForward = 0.00f;
+        float OffsetSide = 0.00f;
+        float Pitch = 0.00f;
         SLean Lean;
         SHorizonLock HorizonLock;
         SMovement Movement;
@@ -118,6 +121,8 @@ public:
 
     void Write(ESaveType saveType);
     bool Write(const std::string& newName, Hash model, std::string plate, ESaveType saveType);
+
+    void DeleteCamera(const std::string& camToDelete);
 
     std::string Name;
 

@@ -10,6 +10,7 @@
 #include "Util/UI.hpp"
 
 #include <inc/natives.h>
+#include <algorithm>
 
 namespace {
     // Keep in sync with EMountPoint
@@ -37,7 +38,9 @@ namespace {
             mbCtx.Option("~r~Error: CamIndex >= Mount.size()");
             return false;
         }
-        mbCtx.Subtitle(std::format("Camera {} - {}", config->Name, config->CamIndex));
+        mbCtx.Subtitle(std::format("{} - {}",
+            config->Name,
+            config->Mount[config->CamIndex].Name));
         return true;
     }
 }
@@ -72,13 +75,16 @@ std::vector<CScriptMenu<CFPVScript>::CSubmenu> FPV::BuildMenu() {
                     }
                 };
 
-                mbCtx.OptionPlus("Select camera",
-                    FormatCameraInfo(*cfg),
+                mbCtx.OptionPlus(std::format("Select camera <{}>", cfg->CamIndex),
+                    FormatCameraInfo(*cfg, cfg->CamIndex),
                     nullptr, onRight, onLeft, "Camera info",
                     { "Switch cameras for different viewpoints." });
 
+                mbCtx.MenuOption("Camera settings", "cam.settings.menu",
+                    { "Change active camera parameters." });
+
                 mbCtx.MenuOption("Manage cameras", "cam.manage.menu",
-                    { "No config is active, camera management unavailable." });
+                    { "View, add or remove cameras from this config." });
             }
 
             mbCtx.MenuOption("Manage configs", "cfg.manage.menu",
@@ -136,11 +142,11 @@ std::vector<CScriptMenu<CFPVScript>::CSubmenu> FPV::BuildMenu() {
             }
         });
 
-    submenus.emplace_back("cam.manage.menu",
+    submenus.emplace_back("cam.settings.menu",
         [](NativeMenu::Menu& mbCtx, CFPVScript& context) {
             mbCtx.Title("Camera settings");
             CConfig* config = context.ActiveConfig();
-            mbCtx.Subtitle(std::format("Current: {}", config ? config->Name : "None"));
+            mbCtx.Subtitle(std::format("Config: {}", config ? config->Name : "None"));
             if (config == nullptr) {
                 mbCtx.Option("No active vehicle/configuration");
                 return;
@@ -198,7 +204,7 @@ std::vector<CScriptMenu<CFPVScript>::CSubmenu> FPV::BuildMenu() {
         [](NativeMenu::Menu& mbCtx, CFPVScript& context) {
             mbCtx.Title("Sensitivity");
             CConfig* config = context.ActiveConfig();
-            mbCtx.Subtitle(std::format("Current: {}", config ? config->Name : "None"));
+            mbCtx.Subtitle(std::format("Config: {}", config ? config->Name : "None"));
             if (config == nullptr) {
                 mbCtx.Option("No active vehicle/configuration");
                 return;
@@ -542,6 +548,88 @@ std::vector<CScriptMenu<CFPVScript>::CSubmenu> FPV::BuildMenu() {
                 0.0f, 10.0f, 0.01f, GetKbEntryFloat,
                 { "Modifier for blur reduction when at or above 'TargetAccelMaxDoF' acceleration.",
                   "Default: 1.0, at high acceleration the near blur is as far forward as decided by the speed." });
+        });
+
+    submenus.emplace_back("cam.manage.menu",
+        [](NativeMenu::Menu& mbCtx, CFPVScript& context) {
+            mbCtx.Title("Camera management");
+            CConfig* config = context.ActiveConfig();
+            if (!CreateCameraSubtitle(mbCtx, config)) {
+                return;
+            }
+
+            if (config->Mount.size() < 10) {
+                if (mbCtx.Option("Add camera",
+                    { "Add a new camera to this config." })) {
+                    AddCamera(*config, nullptr);
+                    return;
+                }
+            }
+            else {
+                mbCtx.Option("~c~Cameras full",
+                    { "No more than 10 cameras can be added." });
+            }
+
+            for (int i = 0; i < config->Mount.size(); ++i) {
+                auto cameraName = std::format("{} {}",
+                    config->CamIndex == i ? "> " : "",
+                    config->Mount[i].Name);
+
+                bool orderChanged = false;
+                auto onLeft = [&]() {
+                    if (config->Mount[i].Order > 0) {
+                        ++config->Mount[i - 1].Order;
+                        --config->Mount[i].Order;
+                        std::swap(config->Mount[i - 1], config->Mount[i]);
+                        orderChanged = true;
+                        mbCtx.PreviousOption();
+                    }
+                };
+                auto onRight = [&]() {
+                    if (config->Mount[i].Order < config->Mount.size() - 1) {
+                        ++config->Mount[i].Order;
+                        --config->Mount[i + 1].Order;
+                        std::swap(config->Mount[i], config->Mount[i + 1]);
+                        orderChanged = true;
+                        mbCtx.NextOption();
+                    }
+                };
+
+                bool selected;
+                bool triggered = mbCtx.OptionPlus(cameraName,
+                    {}, &selected, onRight, onLeft, "",
+                    { "Press enter to copy this camera, or to remove it.",
+                      "Press left to increase priority, right to decrease it." });
+
+                // The list has been reshuffled
+                if (orderChanged) {
+                    return;
+                }
+
+                if (selected) {
+                    mbCtx.OptionPlusPlus(FormatCameraInfo(*config, i), cameraName);
+                }
+
+                if (triggered) {
+                    UI::ShowHelpText(
+                        "Enter 'copy' to copy camera.~n~"
+                        "Enter 'delete' to delete camera.~n~"
+                        "(Both without quotes)");
+
+                    std::string choice = GetKbEntryString("copy");
+                    if (choice == "copy") {
+                        AddCamera(*config, &config->Mount[i]);
+                        return;
+                    }
+                    else if (choice == "delete") {
+                        DeleteCamera(*config, config->Mount[i]);
+                        return;
+                    }
+                    else {
+                        UI::Notify("No valid choice entered, cancelled camera copy/delete.");
+                    }
+                }
+            }
         });
 
     submenus.emplace_back("debug.menu",

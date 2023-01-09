@@ -51,6 +51,49 @@ void FPV::CreateConfig(CConfig& config, Vehicle vehicle) {
     FPV::LoadConfigs();
 }
 
+void FPV::AddCamera(CConfig& config, CConfig::SCameraSettings* baseCam) {
+    UI::ShowHelpText("Enter a unique camera name.");
+    std::string name = GetKbEntryString("");
+
+    if (name.empty()) {
+        UI::Notify("No name entered, cancelled new camera.");
+        return;
+    }
+    auto duplicateMount = std::find_if(config.Mount.begin(), config.Mount.end(),
+        [name](const auto& mount) {
+            return mount.Name == name;
+        });
+    if (duplicateMount != config.Mount.end()) {
+        UI::Notify(std::format("This configuration already has a camera with name '{}'.", name));
+        return;
+    }
+
+    // Always last
+    int order = static_cast<int>(config.Mount.size());
+
+    CConfig::SCameraSettings camera{};
+    if (baseCam) {
+        camera = *baseCam;
+    }
+    camera.Name = name;
+    camera.Order = order;
+
+    config.Mount.push_back(camera);
+    UI::Notify(std::format("Camera '{}' added.", name));
+}
+
+void FPV::DeleteCamera(CConfig& config, const CConfig::SCameraSettings& camToDelete) {
+    int delOrder = camToDelete.Order;
+
+    config.DeleteCamera(camToDelete.Name);
+
+    for (auto& cam : config.Mount) {
+        if (cam.Order > delOrder) {
+            --cam.Order;
+        }
+    }
+}
+
 std::string FPV::MountName(CConfig::EMountPoint mount) {
     switch (mount) {
         case CConfig::EMountPoint::Vehicle: return "Vehicle";
@@ -71,7 +114,11 @@ std::vector<std::string> FPV::FormatConfigInfo(const CConfig& cfg) {
     };
 }
 
-std::vector<std::string> FPV::FormatCameraInfo(const CConfig& cfg) {
+std::vector<std::string> FPV::FormatCameraInfo(const CConfig& cfg, int camIndex) {
+    if (camIndex >= cfg.Mount.size()) {
+        return { "Invalid configuration: camIndex >= cfg.Mount.size()" };
+    }
+
     std::string horizonLock;
     if (cfg.Mount[cfg.CamIndex].HorizonLock.Lock) {
         switch (cfg.Mount[cfg.CamIndex].HorizonLock.PitchMode) {
@@ -86,7 +133,7 @@ std::vector<std::string> FPV::FormatCameraInfo(const CConfig& cfg) {
     }
 
     return {
-        std::format("ID {} (max {})", cfg.CamIndex, cfg.Mount.size()),
+        std::format("Camera {}/{}", cfg.CamIndex, cfg.Mount.size()-1),
         std::format("FOV: {:.1f}", cfg.Mount[cfg.CamIndex].FOV),
         std::format("Horizon lock: {}", horizonLock),
         std::format("Inertia: {}", cfg.Mount[cfg.CamIndex].Movement.Follow ? "Yes" : "No"),

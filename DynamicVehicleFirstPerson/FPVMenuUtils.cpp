@@ -85,6 +85,10 @@ void FPV::AddCamera(CConfig& config, CConfig::SCameraSettings* baseCam) {
 void FPV::DeleteCamera(CConfig& config, const CConfig::SCameraSettings& camToDelete) {
     int delOrder = camToDelete.Order;
 
+    if (config.Mount.size() <= 1) {
+        UI::Notify("Deleting the only camera is not possible.");
+        return;
+    }
     config.DeleteCamera(camToDelete.Name);
 
     for (auto& cam : config.Mount) {

@@ -574,29 +574,29 @@ std::vector<CScriptMenu<CFPVScript>::CSubmenu> FPV::BuildMenu() {
                     { "No more than 10 cameras can be added." });
             }
 
+            // Swap after we're done showing the list.
+            bool anyQueued = false;
+            int queueMoveDown = -1;
+            int queueMoveUp = -1;
+
             for (int i = 0; i < config->Mount.size(); ++i) {
                 auto cameraName = config->Mount[i].Name;
                 auto optionName = std::format("{} {}",
                     config->CamIndex == i ? "> " : "",
                     cameraName);
 
-                bool orderChanged = false;
                 auto onLeft = [&]() {
-                    if (config->Mount[i].Order > 0) {
-                        ++config->Mount[i - 1].Order;
-                        --config->Mount[i].Order;
-                        std::swap(config->Mount[i - 1], config->Mount[i]);
-                        orderChanged = true;
-                        mbCtx.PreviousOption();
+                    if (config->Mount[i].Order > 0 &&
+                        !anyQueued) {
+                        queueMoveUp = i;
+                        anyQueued = true;
                     }
                 };
                 auto onRight = [&]() {
-                    if (config->Mount[i].Order < config->Mount.size() - 1) {
-                        ++config->Mount[i].Order;
-                        --config->Mount[i + 1].Order;
-                        std::swap(config->Mount[i], config->Mount[i + 1]);
-                        orderChanged = true;
-                        mbCtx.NextOption();
+                    if (config->Mount[i].Order < config->Mount.size() - 1 &&
+                        !anyQueued) {
+                        queueMoveDown = i;
+                        anyQueued = true;
                     }
                 };
 
@@ -605,11 +605,6 @@ std::vector<CScriptMenu<CFPVScript>::CSubmenu> FPV::BuildMenu() {
                     {}, &selected, onRight, onLeft, "",
                     { "Press enter to copy this camera, or to remove it.",
                       "Press left to increase priority, right to decrease it." });
-
-                // The list has been reshuffled
-                if (orderChanged) {
-                    return;
-                }
 
                 if (selected) {
                     mbCtx.OptionPlusPlus(FormatCameraInfo(*config, i), cameraName);
@@ -634,6 +629,21 @@ std::vector<CScriptMenu<CFPVScript>::CSubmenu> FPV::BuildMenu() {
                         UI::Notify("No valid choice entered, cancelled camera copy/delete.");
                     }
                 }
+            }
+
+            if (queueMoveDown != -1) {
+                int i = queueMoveDown;
+                ++config->Mount[i].Order;
+                --config->Mount[i + 1].Order;
+                std::swap(config->Mount[i], config->Mount[i + 1]);
+                mbCtx.NextOption();
+            }
+            else if (queueMoveUp != -1) {
+                int i = queueMoveUp;
+                ++config->Mount[i - 1].Order;
+                --config->Mount[i].Order;
+                std::swap(config->Mount[i - 1], config->Mount[i]);
+                mbCtx.PreviousOption();
             }
         });
 

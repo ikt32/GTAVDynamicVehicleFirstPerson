@@ -616,7 +616,7 @@ std::vector<CScriptMenu<CFPVScript>::CSubmenu> FPV::BuildMenu() {
                         "Enter 'delete' to delete camera.~n~"
                         "(Both without quotes)");
 
-                    std::string choice = GetKbEntryString("copy");
+                    std::string choice = GetKbEntryString("");
                     if (choice == "copy") {
                         AddCamera(*config, &config->Mount[i]);
                         return;

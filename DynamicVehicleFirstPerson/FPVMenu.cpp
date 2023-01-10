@@ -603,7 +603,7 @@ std::vector<CScriptMenu<CFPVScript>::CSubmenu> FPV::BuildMenu() {
                 bool selected;
                 bool triggered = mbCtx.OptionPlus(optionName,
                     {}, &selected, onRight, onLeft, "",
-                    { "Press enter to copy this camera, or to remove it.",
+                    { "Press enter to copy or delete this camera.",
                       "Press left to increase priority, right to decrease it." });
 
                 if (selected) {

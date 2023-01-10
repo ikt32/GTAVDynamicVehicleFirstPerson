@@ -83,7 +83,8 @@ void FPV::AddCamera(CConfig& config, CConfig::SCameraSettings* baseCam) {
 }
 
 void FPV::DeleteCamera(CConfig& config, const CConfig::SCameraSettings& camToDelete) {
-    int delOrder = camToDelete.Order;
+    auto delName = camToDelete.Name;
+    auto delOrder = camToDelete.Order;
 
     if (config.Mount.size() <= 1) {
         UI::Notify("Deleting the only camera is not possible.");
@@ -95,13 +96,14 @@ void FPV::DeleteCamera(CConfig& config, const CConfig::SCameraSettings& camToDel
         --config.CamIndex;
     }
 
-    config.DeleteCamera(camToDelete.Name);
+    config.DeleteCamera(delName);
 
     for (auto& cam : config.Mount) {
         if (cam.Order > delOrder) {
             --cam.Order;
         }
     }
+    UI::Notify(std::format("Camera '{}' deleted.", delName));
 }
 
 std::string FPV::MountName(CConfig::EMountPoint mount) {

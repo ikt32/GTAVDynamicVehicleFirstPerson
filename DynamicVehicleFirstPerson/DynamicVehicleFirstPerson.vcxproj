@@ -115,6 +115,7 @@
     <ClCompile Include="Config.cpp" />
     <ClCompile Include="Memory\MemoryAccess.cpp" />
     <ClCompile Include="Memory\VehicleExtensions.cpp" />
+    <ClCompile Include="MTCamCompatibility.cpp" />
     <ClCompile Include="VehicleMetaData.cpp" />
     <ClCompile Include="DllMain.cpp" />
     <ClCompile Include="FPVScript.cpp" />
@@ -151,6 +152,7 @@
     <ClInclude Include="Constants.hpp" />
     <ClInclude Include="Memory\MemoryAccess.hpp" />
     <ClInclude Include="Memory\VehicleExtensions.hpp" />
+    <ClInclude Include="MTCamCompatibility.hpp" />
     <ClInclude Include="Util\Enums.hpp" />
     <ClInclude Include="VehicleMetaData.hpp" />
     <ClInclude Include="FPVMenuUtils.hpp" />

@@ -3,6 +3,7 @@
 #include "ScriptMenu.hpp"
 #include "Memory/MemoryAccess.hpp"
 #include "Memory/VehicleExtensions.hpp"
+#include "MTCamCompatibility.hpp"
 
 #include "Util/Logger.hpp"
 #include "Util/Paths.hpp"
@@ -52,6 +53,7 @@ void FPV::scriptInit() {
     Memory::Init();
     VehicleExtensions::Init();
     Compatibility::Setup();
+    Compatibility::DisableMTCam();
 
     LoadConfigs();
 

@@ -48,13 +48,18 @@
     <ClCompile Include="Util\Timer.cpp">
       <Filter>Util</Filter>
     </ClCompile>
-    <ClCompile Include="Compatibility.cpp" />
     <ClCompile Include="VehicleMetaData.cpp" />
     <ClCompile Include="Memory\MemoryAccess.cpp">
       <Filter>Memory</Filter>
     </ClCompile>
     <ClCompile Include="Memory\VehicleExtensions.cpp">
       <Filter>Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="Compatibility.cpp">
+      <Filter>Compatibility</Filter>
+    </ClCompile>
+    <ClCompile Include="MTCamCompatibility.cpp">
+      <Filter>Compatibility</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -129,7 +134,6 @@
     <ClInclude Include="Util\Timer.hpp">
       <Filter>Util</Filter>
     </ClInclude>
-    <ClInclude Include="Compatibility.hpp" />
     <ClInclude Include="Util\Math.hpp">
       <Filter>Util</Filter>
     </ClInclude>
@@ -142,6 +146,12 @@
     </ClInclude>
     <ClInclude Include="Memory\VehicleExtensions.hpp">
       <Filter>Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="Compatibility.hpp">
+      <Filter>Compatibility</Filter>
+    </ClInclude>
+    <ClInclude Include="MTCamCompatibility.hpp">
+      <Filter>Compatibility</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -171,6 +181,9 @@
     </Filter>
     <Filter Include="Memory">
       <UniqueIdentifier>{64549c3f-af30-4efd-a1a2-ed86ef4e9497}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Compatibility">
+      <UniqueIdentifier>{c3158f0b-0a0d-411c-89ef-40889c90af2e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

@@ -11,6 +11,7 @@ namespace {
     HMODULE MTModule = nullptr;
     bool(*MT_LookingLeft)() = nullptr;
     bool(*MT_LookingRight)() = nullptr;
+    bool(*MT_LookingBack)() = nullptr;
 }
 
 namespace Dismemberment {
@@ -87,17 +88,20 @@ void MT::Setup() {
 
     MT_LookingLeft = CheckAddr<bool(*)()>(MTModule, "MT_LookingLeft");
     MT_LookingRight = CheckAddr<bool(*)()>(MTModule, "MT_LookingRight");
+    MT_LookingBack = CheckAddr<bool(*)()>(MTModule, "MT_LookingBack");
 }
 
 void MT::Cleanup() {
     MTModule = nullptr;
     MT_LookingLeft = nullptr;
     MT_LookingRight = nullptr;
+    MT_LookingBack = nullptr;
 }
 
 bool MT::Available() {
     return MT_LookingLeft != nullptr &&
-        MT_LookingRight != nullptr;
+        MT_LookingRight != nullptr &&
+        MT_LookingBack != nullptr;
 }
 
 bool MT::LookingLeft() {
@@ -109,5 +113,11 @@ bool MT::LookingLeft() {
 bool MT::LookingRight() {
     if (MT_LookingRight)
         return MT_LookingRight();
+    return false;
+}
+
+bool MT::LookingBack() {
+    if (MT_LookingBack)
+        return MT_LookingBack();
     return false;
 }

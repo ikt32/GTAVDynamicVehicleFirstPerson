@@ -160,7 +160,7 @@ void CFPVScript::update() {
     CAM::SET_SCRIPTED_CAMERA_IS_FIRST_PERSON_THIS_FRAME(true);
 
     bool lookingIntoGlass = false;
-    if (MT::LookingLeft() || MT::LookingRight()) {
+    if (MT::LookingLeft() || MT::LookingRight() || MT::LookingBack()) {
         // Manual Transmission wheel keys
         updateWheelLook(lookingIntoGlass);
     }
@@ -466,7 +466,7 @@ void CFPVScript::updateWheelLook(bool& lookingIntoGlass) {
         mMTLookBackRightShoulder = false;
     }
 
-    if (MT::LookingLeft() && MT::LookingRight()) {
+    if (MT::LookingLeft() && MT::LookingRight() || MT::LookingBack()) {
         if (mVehicleData.IsRHD() && mMTLookBackRightShoulder) {
             lookingIntoGlass = true;
         }

@@ -17,4 +17,5 @@ namespace MT {
 
     bool LookingLeft();
     bool LookingRight();
+    bool LookingBack();
 }

@@ -248,8 +248,6 @@ void CFPVScript::update() {
 
     float pitch = mount.Pitch;
     float fov = mount.FOV;
-    float horizonLockPitch = 0.0f;
-    float horizonLockRoll = 0.0f;
 
     Vector3 leanOffset = getLeanOffset(lookingIntoGlass);
 
@@ -288,8 +286,8 @@ void CFPVScript::update() {
 
     CAM::SET_CAM_ROT(
         mHandle, {
-            rot.x + mRotation.x + pitch + pitchLookComp + rollPitchComp + mInertiaPitch - horizonLockPitch,
-            rot.y + rollLookComp + horizonLockRoll,
+            rot.x + mRotation.x + pitch + pitchLookComp + rollPitchComp + mInertiaPitch - horizonLockRotation.x,
+            rot.y + rollLookComp + horizonLockRotation.y,
             rot.z + mRotation.z - mInertiaDirectionLookAngle
         },
         0);

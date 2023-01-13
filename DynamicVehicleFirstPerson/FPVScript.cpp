@@ -820,7 +820,7 @@ Vector3 CFPVScript::getHorizonLockRotation() {
 
 Vector3 CFPVScript::getShakeFromSpeed() {
     if (!VEHICLE::IS_VEHICLE_ON_ALL_WHEELS(mVehicle))
-        return;
+        return {};
 
     const float amplitudeBase = mActiveConfig->Mount[mActiveConfig->CamIndex].Movement.ShakeSpeed;
 

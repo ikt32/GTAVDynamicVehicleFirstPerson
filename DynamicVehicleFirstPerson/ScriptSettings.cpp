@@ -53,17 +53,20 @@ void CScriptSettings::Save() {
     SAVE_VAL("Main", "Enable", Main.Enable);
 
     // No save debug enable, read-only from ini
-    SAVE_VAL("Debug", "DisableRemoveHead", Debug.DisableRemoveHead);
-    SAVE_VAL("Debug", "DisableRemoveProps", Debug.DisableRemoveProps);
+    // Don't write debug values if not enabled
+    if (Debug.Enable) {
+        SAVE_VAL("Debug", "DisableRemoveHead", Debug.DisableRemoveHead);
+        SAVE_VAL("Debug", "DisableRemoveProps", Debug.DisableRemoveProps);
 
-    SAVE_VAL("Debug.NearClip", "Override", Debug.NearClip.Override);
-    SAVE_VAL("Debug.NearClip", "Distance", Debug.NearClip.Distance);
+        SAVE_VAL("Debug.NearClip", "Override", Debug.NearClip.Override);
+        SAVE_VAL("Debug.NearClip", "Distance", Debug.NearClip.Distance);
 
-    SAVE_VAL("Debug.DoF", "Override", Debug.DoF.Override);
-    SAVE_VAL("Debug.DoF", "NearOutFocus", Debug.DoF.NearOutFocus);
-    SAVE_VAL("Debug.DoF", "NearInFocus", Debug.DoF.NearInFocus);
-    SAVE_VAL("Debug.DoF", "FarInFocus", Debug.DoF.FarInFocus);
-    SAVE_VAL("Debug.DoF", "FarOutFocus", Debug.DoF.FarOutFocus);
+        SAVE_VAL("Debug.DoF", "Override", Debug.DoF.Override);
+        SAVE_VAL("Debug.DoF", "NearOutFocus", Debug.DoF.NearOutFocus);
+        SAVE_VAL("Debug.DoF", "NearInFocus", Debug.DoF.NearInFocus);
+        SAVE_VAL("Debug.DoF", "FarInFocus", Debug.DoF.FarInFocus);
+        SAVE_VAL("Debug.DoF", "FarOutFocus", Debug.DoF.FarOutFocus);
+    }
 
     result = ini.SaveFile(mSettingsFile.c_str());
     CHECK_LOG_SI_ERROR(result, "save");

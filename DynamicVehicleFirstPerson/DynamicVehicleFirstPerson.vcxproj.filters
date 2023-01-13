@@ -61,6 +61,10 @@
     <ClCompile Include="MTCamCompatibility.cpp">
       <Filter>Compatibility</Filter>
     </ClCompile>
+    <ClCompile Include="..\thirdparty\Perlin_Noise\PerlinNoise.cpp">
+      <Filter>ThirdParty\PerlinNoise</Filter>
+    </ClCompile>
+    <ClCompile Include="ShakeData.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Script.hpp" />
@@ -153,6 +157,10 @@
     <ClInclude Include="MTCamCompatibility.hpp">
       <Filter>Compatibility</Filter>
     </ClInclude>
+    <ClInclude Include="..\thirdparty\Perlin_Noise\PerlinNoise.h">
+      <Filter>ThirdParty\PerlinNoise</Filter>
+    </ClInclude>
+    <ClInclude Include="ShakeData.hpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Util">
@@ -184,6 +192,9 @@
     </Filter>
     <Filter Include="Compatibility">
       <UniqueIdentifier>{c3158f0b-0a0d-411c-89ef-40889c90af2e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ThirdParty\PerlinNoise">
+      <UniqueIdentifier>{61f0b7d8-68a5-4455-84d0-f3243b96cd49}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

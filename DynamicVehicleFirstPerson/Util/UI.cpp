@@ -41,3 +41,15 @@ void UI::ShowHelpText(const std::string& message) {
 
     HUD::END_TEXT_COMMAND_DISPLAY_HELP(0, false, false, -1);
 }
+
+void UI::ShowText(float x, float y, float scale, const std::string& text) {
+    HUD::SET_TEXT_FONT(0);
+    HUD::SET_TEXT_SCALE(scale, scale);
+    HUD::SET_TEXT_COLOUR(255, 255, 255, 255);
+    HUD::SET_TEXT_WRAP(0.0, 1.0);
+    HUD::SET_TEXT_CENTRE(0);
+    HUD::SET_TEXT_OUTLINE();
+    HUD::BEGIN_TEXT_COMMAND_DISPLAY_TEXT("STRING");
+    HUD::ADD_TEXT_COMPONENT_SUBSTRING_PLAYER_NAME(text.c_str());
+    HUD::END_TEXT_COMMAND_DISPLAY_TEXT({ x, y }, 0);
+}

@@ -4,3 +4,6 @@
 [submodule "thirdparty/simpleini"]
 	path = thirdparty/simpleini
 	url = https://github.com/brofield/simpleini
+[submodule "thirdparty/Perlin_Noise"]
+	path = thirdparty/Perlin_Noise
+	url = https://github.com/sol-prog/Perlin_Noise

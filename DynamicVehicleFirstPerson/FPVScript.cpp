@@ -4,6 +4,7 @@
 #include "Util/Math.hpp"
 #include "Util/ScriptUtils.hpp"
 #include "Util/Strings.hpp"
+#include "Util/UI.hpp"
 
 #include "Memory/MemoryAccess.hpp"
 #include "Memory/VehicleExtensions.hpp"
@@ -12,9 +13,13 @@
 #include <inc/main.h>
 #include <inc/natives.h>
 #include <format>
+#include <map>
 
-CFPVScript::CFPVScript(const std::shared_ptr<CScriptSettings>& settings, std::vector<CConfig>& configs)
+CFPVScript::CFPVScript(const std::shared_ptr<CScriptSettings>& settings,
+    const std::shared_ptr<CShakeData>& shakeData,
+    std::vector<CConfig>& configs)
     : mSettings(settings)
+    , mShakeData(shakeData)
     , mConfigs(configs)
     , mVehicle(0)
     , mVehicleData(mVehicle)
@@ -23,6 +28,8 @@ CFPVScript::CFPVScript(const std::shared_ptr<CScriptSettings>& settings, std::ve
     if (getGameVersion() < 38) {
         mFpvCamOffsetXOffset = 0x428;
     }
+
+    mPerlinNoise = std::make_unique<PerlinNoise>();
 }
 
 void CFPVScript::UpdateActiveConfig() {
@@ -251,13 +258,22 @@ void CFPVScript::update() {
 
     Vector3 leanOffset = getLeanOffset(lookingIntoGlass);
 
+    Vector3 shakeInfo{};
+    if (mount.Movement.ShakeSpeed > 0.0f) {
+        shakeInfo = getShakeFromSpeed();
+    }
+
+    if (mount.Movement.ShakeTerrain > 0.0f) {
+        shakeInfo = shakeInfo + getShakeFromTerrain();
+    }
+
     switch (mount.MountPoint) {
         case CConfig::EMountPoint::Ped: {
             // 0x796E skel_head id
             CAM::ATTACH_CAM_TO_PED_BONE(mHandle, playerPed, 0x796E, {
-                mount.OffsetSide + leanOffset.x + mInertiaMove.x,
+                mount.OffsetSide + leanOffset.x + mInertiaMove.x + shakeInfo.x,
                 mount.OffsetForward + leanOffset.y + mInertiaMove.y,
-                mount.OffsetHeight + leanOffset.z + mInertiaMove.z
+                mount.OffsetHeight + leanOffset.z + mInertiaMove.z + shakeInfo.y
                 }, true);
             break;
         }
@@ -265,9 +281,9 @@ void CFPVScript::update() {
         default:
         {
             CAM::ATTACH_CAM_TO_ENTITY(mHandle, vehicle, {
-                seatOffset.x + camSeatOffset.x + mount.OffsetSide + leanOffset.x + mInertiaMove.x,
+                seatOffset.x + camSeatOffset.x + mount.OffsetSide + leanOffset.x + mInertiaMove.x + shakeInfo.x,
                 seatOffset.y + camSeatOffset.y + mount.OffsetForward + leanOffset.y + mInertiaMove.y,
-                seatOffset.z + camSeatOffset.z + mount.OffsetHeight + leanOffset.z + mInertiaMove.z + rollbarOffset
+                seatOffset.z + camSeatOffset.z + mount.OffsetHeight + leanOffset.z + mInertiaMove.z + rollbarOffset + shakeInfo.y
                 }, true);
             break;
         }
@@ -287,7 +303,7 @@ void CFPVScript::update() {
     CAM::SET_CAM_ROT(
         mHandle, {
             rot.x + mRotation.x + pitch + pitchLookComp + rollPitchComp + mInertiaPitch - horizonLockRotation.x,
-            rot.y + rollLookComp + horizonLockRotation.y,
+            rot.y + rollLookComp + horizonLockRotation.y + shakeInfo.z,
             rot.z + mRotation.z - mInertiaDirectionLookAngle
         },
         0);
@@ -309,11 +325,14 @@ void CFPVScript::init() {
         {},
         mActiveConfig->Mount[mActiveConfig->CamIndex].FOV, 1, 2);
 
-    VEHICLE::SET_CAR_HIGH_SPEED_BUMP_SEVERITY_MULTIPLIER(mActiveConfig->Mount[mActiveConfig->CamIndex].Movement.Bump);
+    VEHICLE::SET_CAR_HIGH_SPEED_BUMP_SEVERITY_MULTIPLIER(0.0f);
 
     if (!mSettings->Debug.DisableRemoveHead) {
         hideHead(true);
     }
+
+    mCumTimeSpeed = 0.0;
+    mCumTimeTerrain = 0.0;
 }
 
 void CFPVScript::hideHead(bool remove) {
@@ -797,4 +816,128 @@ Vector3 CFPVScript::getHorizonLockRotation() {
         map(abs(mRotation.z), 90.0f, 180.0f, 0.0f, -vehRoll);
 
     return rotations;
+}
+
+Vector3 CFPVScript::getShakeFromSpeed() {
+    if (!VEHICLE::IS_VEHICLE_ON_ALL_WHEELS(mVehicle))
+        return;
+
+    const float amplitudeBase = mActiveConfig->Mount[mActiveConfig->CamIndex].Movement.ShakeSpeed;
+
+    const double sideZ = 3.3f;
+    const double vertZ = 4.2f;
+    const double rollZ = 6.9f;
+
+    const float minRateMod = mShakeData->MinRateModSpd;
+    const float maxRateMod = mShakeData->MaxRateModSpd;
+
+    const float vehMaxSpeed = VEHICLE::GET_VEHICLE_ESTIMATED_MAX_SPEED(mVehicle);
+    const float speed = ENTITY::GET_ENTITY_SPEED(mVehicle);
+
+    if (mSettings->Debug.Enable) {
+        UI::ShowText(0.5f, 0.25f, 0.5f, std::format("Est Max Spd {:.0f} kph", vehMaxSpeed * 3.6f));
+    }
+
+    // Shake amplitude modifer <-> rpm
+    float rpmModifier = mapclamp(VExt::GetRPM(mVehicle), 0.5f, 0.8f, 0.0f, 1.0f);
+
+    // Shake amplitude <-> speed relation:
+    // <  50% speed: no shake
+    // >  90% speed: full shake
+    float amplitude = mapclamp(speed,
+        vehMaxSpeed * 0.5f,
+        vehMaxSpeed * 0.9f,
+        0.0f,
+        amplitudeBase * rpmModifier);
+
+    double x = cos(mCumTimeSpeed);
+    double y = sin(mCumTimeSpeed);
+
+    double sideNoise = mPerlinNoise->noise(x, y, sideZ + mCumTimeSpeed) - 0.5;
+    double vertNoise = mPerlinNoise->noise(x, y, vertZ + mCumTimeSpeed) - 0.5;
+    double rollNoise = mPerlinNoise->noise(x, y, rollZ + mCumTimeSpeed) - 0.5;
+
+    float shakeRate = mapclamp(speed, 0.0f, vehMaxSpeed, minRateMod, maxRateMod);
+    mCumTimeSpeed = mCumTimeSpeed + MISC::GET_FRAME_TIME() * Memory::GetTimeScale() * shakeRate;
+
+    return Vector3{
+        static_cast<float>(sideNoise * amplitude),
+        static_cast<float>(vertNoise * amplitude),
+        static_cast<float>(rollNoise * 5.0 * amplitude)
+    };
+}
+
+Vector3 CFPVScript::getShakeFromTerrain() {
+    const float amplitudeBase = mActiveConfig->Mount[mActiveConfig->CamIndex].Movement.ShakeTerrain;
+
+    const double sideZ = 3.3f;
+    const double vertZ = 4.2f;
+    const double rollZ = 6.9f;
+
+    const float minRateMod = mShakeData->MinRateModTrn;
+    const float maxRateMod = mShakeData->MaxRateModTrn;
+
+    const float vehMaxSpeed = VEHICLE::GET_VEHICLE_ESTIMATED_MAX_SPEED(mVehicle);
+    const float speed = ENTITY::GET_ENTITY_SPEED(mVehicle);
+
+    auto terrainTypes = VExt::GetTireContactMaterials(mVehicle);
+    auto suspensionCompressions = VExt::GetSuspensionCompressions(mVehicle);
+
+    float terrainAmplMod = 0.0f;
+    float terrainFreqMod = 1.0f;
+    float terrainMatchCount = 0.0f;
+    for (int i = 0; i < terrainTypes.size(); ++i) {
+        auto terrainType = terrainTypes[i];
+        auto foundMatIt = mShakeData->MaterialReactionMap.find(static_cast<eMaterial>(terrainType));
+        bool onGround = suspensionCompressions[i] > 0.0f;
+
+        if (onGround && foundMatIt != mShakeData->MaterialReactionMap.end()) {
+            terrainAmplMod += foundMatIt->second.Amplitude / static_cast<float>(terrainTypes.size());
+
+            terrainFreqMod += foundMatIt->second.Frequency;
+            terrainMatchCount += 1.0f;
+        }
+
+        if (mSettings->Debug.Enable) {
+            std::string matName = "Unknown";
+            std::string matParams = "None";
+            if (terrainType < sMaterialNames.size()) {
+                matName = sMaterialNames[terrainType];
+            }
+
+            if (foundMatIt != mShakeData->MaterialReactionMap.end()) {
+                matParams = std::format("[A {:.2f} | F {:.2f}]",
+                    foundMatIt->second.Amplitude, foundMatIt->second.Frequency);
+            }
+
+            UI::ShowText(0.25f, 0.05f * i, 0.5f, std::format("[{}] {} @ {}{}",
+                i, matName, onGround ? "~g~" : "", matParams));
+        }
+    }
+
+    if (terrainMatchCount > 0.0f) {
+        terrainFreqMod /= terrainMatchCount;
+    }
+
+    float amplitude = mapclamp(speed,
+        0.0f,
+        vehMaxSpeed * 0.4f,
+        0.0f,
+        amplitudeBase * terrainAmplMod);
+
+    double x = cos(mCumTimeTerrain);
+    double y = sin(mCumTimeTerrain);
+
+    double sideNoise = mPerlinNoise->noise(x, y, sideZ + mCumTimeTerrain) - 0.5;
+    double vertNoise = mPerlinNoise->noise(x, y, vertZ + mCumTimeTerrain) - 0.5;
+    double rollNoise = mPerlinNoise->noise(x, y, rollZ + mCumTimeTerrain) - 0.5;
+
+    float shakeRate = mapclamp(speed, 0.0f, vehMaxSpeed, minRateMod, maxRateMod) * terrainFreqMod;
+    mCumTimeTerrain = mCumTimeTerrain + MISC::GET_FRAME_TIME() * Memory::GetTimeScale() * shakeRate;
+
+    return Vector3{
+        static_cast<float>(sideNoise * amplitude),
+        static_cast<float>(vertNoise * amplitude),
+        static_cast<float>(rollNoise * 5.0 * amplitude)
+    };
 }

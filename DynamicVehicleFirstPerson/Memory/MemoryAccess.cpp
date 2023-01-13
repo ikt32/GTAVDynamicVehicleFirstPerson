@@ -10,6 +10,8 @@
 namespace Memory {
     uintptr_t(*GetAddressOfEntity)(int entity) = nullptr;
     uintptr_t(*GetModelInfo)(unsigned int modelHash, int* index) = nullptr;
+
+    float* timeScaleAddress = nullptr;
 }
 
 void Memory::Init() {
@@ -46,6 +48,21 @@ void Memory::Init() {
     }
 
     GetModelInfo = reinterpret_cast<uintptr_t(*)(unsigned int modelHash, int* index)>(addr);
+
+    // From ScriptHookVDotNet
+    addr = FindPattern("\xF3\x0F\x11\x05\x00\x00\x00\x00\xF3\x0F\x10\x08\x0F\x2F\xC8\x73\x03\x0F\x28\xC1\x48\x83\xC0\x04\x49\x2B",
+        "xxxx????xxxxxxxxxxxxxxxxxx");
+    if (!addr) {
+        LOG(ERROR, "Couldn't find TimeScaleAddress1");
+    }
+    else {
+        auto timeScaleArrayAddress = (float*)(*(int*)(addr + 4) + addr + 8);
+        if (timeScaleArrayAddress != nullptr)
+            // SET_TIME_SCALE changes the 2nd element, so obtain the address of it
+            timeScaleAddress = timeScaleArrayAddress + 1;
+        else
+            LOG(ERROR, "Couldn't find TimeScaleAddress2");
+    }
 }
 
 uintptr_t Memory::FindPattern(const char* pattern, const char* mask) {
@@ -101,4 +118,10 @@ uintptr_t Memory::FindPattern(const char* pattStr) {
         }
     }
     return 0;
+}
+
+float Memory::GetTimeScale() {
+    if (timeScaleAddress)
+        return *timeScaleAddress;
+    return 1.0f;
 }

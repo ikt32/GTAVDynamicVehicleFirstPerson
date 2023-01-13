@@ -74,7 +74,8 @@ CConfig::EMountPoint GetValue(CSimpleIniA& ini, const std::string& section, cons
     SAVE_VAL(section, "VertUpLimit",       ##source.VertUpLimit); \
     SAVE_VAL(section, "VertDownLimit",     ##source.VertDownLimit); \
     SAVE_VAL(section, "Roughness",         ##source.Roughness); \
-    SAVE_VAL(section, "Bump",              ##source.Bump); \
+    SAVE_VAL(section, "ShakeSpeed",        ##source.ShakeSpeed); \
+    SAVE_VAL(section, "ShakeTerrain",      ##source.ShakeTerrain); \
 }
 
 #define LOAD_VAL_MOVEMENT(section, source) { \
@@ -101,7 +102,8 @@ CConfig::EMountPoint GetValue(CSimpleIniA& ini, const std::string& section, cons
     LOAD_VAL(section, "VertUpLimit",       ##source.VertUpLimit); \
     LOAD_VAL(section, "VertDownLimit",     ##source.VertDownLimit); \
     LOAD_VAL(section, "Roughness",         ##source.Roughness); \
-    LOAD_VAL(section, "Bump",              ##source.Bump); \
+    LOAD_VAL(section, "ShakeSpeed",        ##source.ShakeSpeed); \
+    LOAD_VAL(section, "ShakeTerrain",      ##source.ShakeTerrain); \
 }
 
 #define SAVE_VAL_HORIZON(section, source) { \

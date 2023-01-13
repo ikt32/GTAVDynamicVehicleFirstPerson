@@ -16,6 +16,7 @@ namespace {
     std::shared_ptr<CFPVScript> coreScript;
     std::unique_ptr<CScriptMenu<CFPVScript>> scriptMenu;
     std::shared_ptr<CScriptSettings> settings;
+    std::shared_ptr<CShakeData> shakeData;
 
     std::vector<CConfig> configs;
 
@@ -45,9 +46,13 @@ void FPV::ScriptMain() {
 void FPV::scriptInit() {
     const auto settingsGeneralPath = Paths::GetModPath() / "settings_general.ini";
     const auto settingsMenuPath = Paths::GetModPath() / "settings_menu.ini";
+    const auto shakeDataPath = Paths::GetModPath() / "shake.ini";
 
     settings = std::make_shared<CScriptSettings>(settingsGeneralPath.string());
     settings->Load();
+
+    shakeData = std::make_shared<CShakeData>(shakeDataPath.string());
+    shakeData->Load();
     LOG(INFO, "Settings loaded");
 
     Memory::Init();
@@ -57,7 +62,7 @@ void FPV::scriptInit() {
 
     LoadConfigs();
 
-    coreScript = std::make_shared<CFPVScript>(settings, configs);
+    coreScript = std::make_shared<CFPVScript>(settings, shakeData, configs);
     coreScript->UpdateActiveConfig();
 
     // The menu being initialized. Note the passed settings,
@@ -66,6 +71,7 @@ void FPV::scriptInit() {
         []() {
             // onInit
             settings->Load();
+            shakeData->Load();
             LoadConfigs();
         },
         []() {
@@ -93,6 +99,10 @@ void FPV::updateActiveConfigs() {
 
 CScriptSettings& FPV::GetSettings() {
     return *settings;
+}
+
+CShakeData& FPV::GetShakeData() {
+    return *shakeData;
 }
 
 CFPVScript& FPV::GetScript() {

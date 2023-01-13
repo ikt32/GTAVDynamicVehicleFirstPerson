@@ -9,4 +9,6 @@ namespace Memory {
 
     extern uintptr_t(*GetAddressOfEntity)(int entity);
     extern uintptr_t(*GetModelInfo)(unsigned int modelHash, int* index);
+
+    float GetTimeScale();
 }

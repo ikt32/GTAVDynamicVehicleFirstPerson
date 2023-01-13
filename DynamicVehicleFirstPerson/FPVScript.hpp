@@ -2,17 +2,22 @@
 #include "Compatibility.hpp"
 #include "Config.hpp"
 #include "ScriptSettings.hpp"
+#include "ShakeData.hpp"
 #include "VehicleMetaData.hpp"
 #include "Util/Timer.hpp"
 
 #include <inc/types.h>
+#include <PerlinNoise.h>
 #include <memory>
 #include <string>
 
 class CFPVScript {
 public:
-    CFPVScript(const std::shared_ptr<CScriptSettings>& settings, std::vector<CConfig>& configs);
+    CFPVScript(const std::shared_ptr<CScriptSettings>& settings,
+        const std::shared_ptr<CShakeData>& shakeData,
+        std::vector<CConfig>& configs);
     ~CFPVScript() = default;
+
     void UpdateActiveConfig();
     CConfig* ActiveConfig() {
         return mActiveConfig;
@@ -46,8 +51,13 @@ private:
     Vector3 getLeanOffset(bool lookingIntoGlass) const;
     Vector3 getHorizonLockRotation();
 
+    // X, Z, Roll
+    Vector3 getShakeFromSpeed();
+    Vector3 getShakeFromTerrain();
+
     // Config management
     const std::shared_ptr<CScriptSettings>& mSettings;
+    const std::shared_ptr<CShakeData>& mShakeData;
     std::vector<CConfig>& mConfigs;
     CConfig* mActiveConfig = nullptr;
 
@@ -94,4 +104,8 @@ private:
     bool mMTLookRightPrev = false;
     bool mMTLookLeftPrev = false;
     bool mMTLookBackRightShoulder = false;
+
+    std::unique_ptr<PerlinNoise> mPerlinNoise;
+    double mCumTimeSpeed = 0.0;
+    double mCumTimeTerrain = 0.0;
 };

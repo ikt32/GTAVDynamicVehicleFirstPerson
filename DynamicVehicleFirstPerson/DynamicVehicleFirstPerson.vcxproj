@@ -69,7 +69,7 @@
       <PreprocessorDefinitions>WIN32_LEAN_AND_MEAN;NOMINMAX;NOGDI;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
-      <AdditionalIncludeDirectories>$(SolutionDir)thirdparty\ScriptHookV_SDK;$(SolutionDir)thirdparty;$(SolutionDir)thirdparty\GTAVMenuBase\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)thirdparty\Perlin_Noise\;$(SolutionDir)thirdparty\ScriptHookV_SDK\;$(SolutionDir)thirdparty\;$(SolutionDir)thirdparty\GTAVMenuBase\</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
@@ -90,7 +90,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <FloatingPointModel>Fast</FloatingPointModel>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>$(SolutionDir)thirdparty\ScriptHookV_SDK;$(SolutionDir)thirdparty;$(SolutionDir)thirdparty\GTAVMenuBase\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)thirdparty\Perlin_Noise\;$(SolutionDir)thirdparty\ScriptHookV_SDK\;$(SolutionDir)thirdparty\;$(SolutionDir)thirdparty\GTAVMenuBase\</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
@@ -111,11 +111,13 @@
     <ClCompile Include="..\thirdparty\GTAVMenuBase\menumemutils.cpp" />
     <ClCompile Include="..\thirdparty\GTAVMenuBase\menusettings.cpp" />
     <ClCompile Include="..\thirdparty\GTAVMenuBase\menuutils.cpp" />
+    <ClCompile Include="..\thirdparty\Perlin_Noise\PerlinNoise.cpp" />
     <ClCompile Include="Compatibility.cpp" />
     <ClCompile Include="Config.cpp" />
     <ClCompile Include="Memory\MemoryAccess.cpp" />
     <ClCompile Include="Memory\VehicleExtensions.cpp" />
     <ClCompile Include="MTCamCompatibility.cpp" />
+    <ClCompile Include="ShakeData.cpp" />
     <ClCompile Include="VehicleMetaData.cpp" />
     <ClCompile Include="DllMain.cpp" />
     <ClCompile Include="FPVScript.cpp" />
@@ -141,6 +143,7 @@
     <ClInclude Include="..\thirdparty\GTAVMenuBase\menusettings.h" />
     <ClInclude Include="..\thirdparty\GTAVMenuBase\menuutils.h" />
     <ClInclude Include="..\thirdparty\GTAVMenuBase\Scaleform.h" />
+    <ClInclude Include="..\thirdparty\Perlin_Noise\PerlinNoise.h" />
     <ClInclude Include="..\thirdparty\ScriptHookV_SDK\inc\enums.h" />
     <ClInclude Include="..\thirdparty\ScriptHookV_SDK\inc\main.h" />
     <ClInclude Include="..\thirdparty\ScriptHookV_SDK\inc\nativeCaller.h" />
@@ -153,6 +156,7 @@
     <ClInclude Include="Memory\MemoryAccess.hpp" />
     <ClInclude Include="Memory\VehicleExtensions.hpp" />
     <ClInclude Include="MTCamCompatibility.hpp" />
+    <ClInclude Include="ShakeData.hpp" />
     <ClInclude Include="Util\Enums.hpp" />
     <ClInclude Include="VehicleMetaData.hpp" />
     <ClInclude Include="FPVMenuUtils.hpp" />

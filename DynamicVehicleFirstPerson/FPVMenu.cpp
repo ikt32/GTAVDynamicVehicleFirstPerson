@@ -281,11 +281,20 @@ std::vector<CScriptMenu<CFPVScript>::CSubmenu> FPV::BuildMenu() {
                   "Larger values increase roughness, causing smaller bumps to be more noticeable.",
                   "Smaller values increase smoothness, but may cause the movement to be less responsive." });
 
-            bool bumpTrigger = mbCtx.FloatOptionCb("Bump severity", movement.Bump, 0.0f, 10.0f, 0.5f, GetKbEntryFloat,
-                { "How much the vehicle itself responds to bumps.",
-                  "Recommended to set this to 0, as the vehicle body moving around is just a visual effect." });
-            if (bumpTrigger) {
-                VEHICLE::SET_CAR_HIGH_SPEED_BUMP_SEVERITY_MULTIPLIER(movement.Bump);
+            float shakeSpeed = movement.ShakeSpeed * 1000.0f;
+            if (mbCtx.FloatOptionCb("Speed shake", shakeSpeed, 0.0f, 100.0f, 0.1f, GetKbEntryFloat,
+                { "How much the camera should shake from vehicle speed.",
+                  "The shaking starts at 50% of top speed, and shakes at the specified amplitude at "
+                    "80% of the top speed.",
+                  "Set to precisely 0.0 to disable." })) {
+                movement.ShakeSpeed = shakeSpeed / 1000.0f;
+            }
+
+            float shakeTerrain = movement.ShakeTerrain * 1000.0f;
+            if (mbCtx.FloatOptionCb("Terrain shake", shakeTerrain, 0.0f, 100.0f, 0.1f, GetKbEntryFloat,
+                { "How much the camera should shake from rough terrain types.",
+                  "Set to precisely 0.0 to disable." })) {
+                movement.ShakeTerrain = shakeTerrain / 1000.0f;
             }
         });
 
@@ -673,6 +682,25 @@ std::vector<CScriptMenu<CFPVScript>::CSubmenu> FPV::BuildMenu() {
             mbCtx.FloatOptionCb("NearInFocus", FPV::GetSettings().Debug.DoF.NearInFocus, 0.0f, 100000.0f, 0.05f, GetKbEntryFloat);
             mbCtx.FloatOptionCb("FarInFocus", FPV::GetSettings().Debug.DoF.FarInFocus, 0.0f, 100000.0f, 1.00f, GetKbEntryFloat);
             mbCtx.FloatOptionCb("FarOutFocus", FPV::GetSettings().Debug.DoF.FarOutFocus, 0.0f, 100000.0f, 1.00f, GetKbEntryFloat);
+
+            std::vector<std::string> shakeMaterialDetails = {
+                std::format("{} materials defined:", FPV::GetShakeData().MaterialReactionMap.size())
+            };
+
+            for (const auto& mat : FPV::GetShakeData().MaterialReactionMap) {
+                std::string matName;
+                auto matIdx = static_cast<int>(mat.first);
+                if (matIdx < sMaterialNames.size()) {
+                    matName = sMaterialNames[matIdx];
+                }
+                else {
+                    matName = std::format("UNK_{}", matIdx);
+                }
+                shakeMaterialDetails.push_back(std::format("{}: A: {:.2f}, F: {:.2f}",
+                    matName, mat.second.Amplitude, mat.second.Frequency));
+            }
+
+            mbCtx.OptionPlus("Shake materials", shakeMaterialDetails);
         });
 
     return submenus;

@@ -525,7 +525,7 @@ void CFPVScript::updateRotationCameraMovement(const CConfig::SMovement& movement
 
     bool isPlane = VEHICLE::IS_THIS_MODEL_A_PLANE(mVehicleData.Model());
     bool isHeli = VEHICLE::IS_THIS_MODEL_A_HELI(mVehicleData.Model());
-    bool isHover = VEHICLE::GET_VEHICLE_FLIGHT_NOZZLE_POSITION(mVehicle) > 0.0f;
+    bool isHover = VExt::GetHoverTransformRatio(mVehicle) > 0.0f;
     // 0.0f: Forward, 1.0f: Vertical
     // G_VER_1_0_1180_2_STEAM = 36
     bool isAirHover = getGameVersion() >= 36 && (isPlane || isHeli) &&

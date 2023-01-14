@@ -145,6 +145,23 @@ std::vector<std::string> FPV::FormatCameraInfo(const CConfig& cfg, int camIndex)
         horizonLock = "No";
     }
 
+    bool shakeSpeed = cfg.Mount[camIndex].Movement.ShakeSpeed > 0.0f;
+    bool shakeTerrain = cfg.Mount[camIndex].Movement.ShakeTerrain > 0.0f;
+
+    std::string shake;
+    if (shakeSpeed && shakeTerrain) {
+        shake = "Speed & Terrain";
+    }
+    else if (shakeSpeed || shakeTerrain) {
+        if (shakeSpeed)
+            shake = "Speed";
+        if (shakeTerrain)
+            shake = "Terrain";
+    }
+    else {
+        shake = "None";
+    }
+
     return {
         std::format("Camera {}/{}", camIndex + 1, cfg.Mount.size()),
         std::format("FOV: {:.1f}", cfg.Mount[camIndex].FOV),

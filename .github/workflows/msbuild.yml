@@ -45,6 +45,6 @@ jobs:
       uses: actions/upload-artifact@v3.1.0
       with:
         # Artifact name
-        name: DynamicVehicleFirstPerson
+        name: DynamicVehicleFirstPerson-${{ GITHUB_SHA }}
         path: |
           GTAV_dir/

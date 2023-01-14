@@ -815,7 +815,7 @@ Vector3 CFPVScript::getHorizonLockRotation() {
 
     rotations.y = abs(mRotation.z) <= 90.0f ?
         map(abs(mRotation.z), 0.0f, 90.0f, vehRoll, 0.0f) :
-        map(abs(mRotation.z), 90.0f, 180.0f, 0.0f, -vehRoll);
+        map(abs(mRotation.z), 90.0f, 180.0f, 0.0f, vehRoll);
 
     return rotations;
 }

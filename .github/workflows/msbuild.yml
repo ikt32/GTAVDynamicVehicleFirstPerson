@@ -36,11 +36,15 @@ jobs:
       # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
       run: msbuild /m /p:Configuration=${{env.BUILD_CONFIGURATION}} ${{env.SOLUTION_FILE_PATH}}
 
+    - name: Copy build result to stage dir
+      run: |
+        cp DynamicVehicleFirstPerson/bin/DynamicVehicleFirstPerson.asi GTAV_dir/DynamicVehicleFirstPerson.asi
+        cp DynamicVehicleFirstPerson/bin/DynamicVehicleFirstPerson.pdb GTAV_dir/DynamicVehicleFirstPerson.pdb
+
     - name: Upload a Build Artifact
       uses: actions/upload-artifact@v3.1.0
       with:
         # Artifact name
         name: DynamicVehicleFirstPerson
         path: |
-          GTAV_dir
-          DynamicVehicleFirstPerson/bin/
+          GTAV_dir/

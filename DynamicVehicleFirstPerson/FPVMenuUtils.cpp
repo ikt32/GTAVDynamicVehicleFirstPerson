@@ -133,12 +133,12 @@ std::vector<std::string> FPV::FormatCameraInfo(const CConfig& cfg, int camIndex)
     }
 
     std::string horizonLock;
-    if (cfg.Mount[cfg.CamIndex].HorizonLock.Lock) {
-        switch (cfg.Mount[cfg.CamIndex].HorizonLock.PitchMode) {
+    if (cfg.Mount[camIndex].HorizonLock.Lock) {
+        switch (cfg.Mount[camIndex].HorizonLock.PitchMode) {
             case 0: horizonLock = "Yes: Full"; break;
             case 1: horizonLock = "Yes: Roll only"; break;
             case 2: horizonLock = "Yes: Dynamic"; break;
-            default: horizonLock = std::format("Index {} out of range", cfg.CamIndex);
+            default: horizonLock = std::format("Index {} out of range", camIndex);
         }
     }
     else {
@@ -146,11 +146,12 @@ std::vector<std::string> FPV::FormatCameraInfo(const CConfig& cfg, int camIndex)
     }
 
     return {
-        std::format("Camera {}/{}", cfg.CamIndex + 1, cfg.Mount.size()),
-        std::format("FOV: {:.1f}", cfg.Mount[cfg.CamIndex].FOV),
+        std::format("Camera {}/{}", camIndex + 1, cfg.Mount.size()),
+        std::format("FOV: {:.1f}", cfg.Mount[camIndex].FOV),
         std::format("Horizon lock: {}", horizonLock),
-        std::format("Inertia: {}", cfg.Mount[cfg.CamIndex].Movement.Follow ? "Yes" : "No"),
-        std::format("DoF: {}", cfg.Mount[cfg.CamIndex].DoF.Enable ? "Yes" : "No")
+        std::format("Inertia: {}", cfg.Mount[camIndex].Movement.Follow ? "Yes" : "No"),
+        std::format("DoF: {}", cfg.Mount[camIndex].DoF.Enable ? "Yes" : "No"),
+        std::format("Shake: {}", shake)
     };
 }
 

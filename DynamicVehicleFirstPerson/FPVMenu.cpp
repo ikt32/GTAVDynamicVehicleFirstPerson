@@ -615,10 +615,15 @@ std::vector<CScriptMenu<CFPVScript>::CSubmenu> FPV::BuildMenu() {
                 bool triggered = mbCtx.OptionPlus(optionName,
                     {}, &selected, onRight, onLeft, "",
                     { "Press enter to copy or delete this camera.",
-                      "Press left to increase priority, right to decrease it." });
+                      "Press left to increase priority, right to decrease it.",
+                      "Press space/RB (handbrake) to select this camera." });
 
                 if (selected) {
                     mbCtx.OptionPlusPlus(FormatCameraInfo(*config, i), cameraName);
+
+                    if (PAD::IS_DISABLED_CONTROL_JUST_RELEASED(0, eControl::ControlVehicleHandbrake)) {
+                        config->CamIndex = i;
+                    }
                 }
 
                 if (triggered) {

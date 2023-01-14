@@ -449,7 +449,7 @@ std::vector<CScriptMenu<CFPVScript>::CSubmenu> FPV::BuildMenu() {
             mbCtx.FloatOptionCb("Pitch limit", horLck.PitchLim, 0.0f, 90.0f, 1.0f, GetKbEntryFloat,
                 { "How much the pitch may differ between the camera and vehicle." });
 
-            mbCtx.FloatOptionCb("Roll limit", horLck.RollLim, 0.0f, 180.0f, 1.0f, GetKbEntryFloat,
+            mbCtx.FloatOptionCb("Roll limit", horLck.RollLim, 0.0f, 90.0f, 1.0f, GetKbEntryFloat,
                 { "How much the roll may differ between the camera and vehicle." });
 
             mbCtx.StringArray("Lock pitch to", PitchModeNames, horLck.PitchMode,

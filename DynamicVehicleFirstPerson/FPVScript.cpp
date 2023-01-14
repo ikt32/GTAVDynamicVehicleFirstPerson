@@ -785,7 +785,13 @@ Vector3 CFPVScript::getHorizonLockRotation() {
     float dynamicPitch = 0.0f;
 
     vehPitch = std::clamp(vehPitch, -horPitchLim, horPitchLim);
-    vehRoll = std::clamp(vehRoll, -horRollLim, horRollLim);
+
+    if (abs(vehRoll) > 90.0f) {
+        vehRoll = map(abs(vehRoll), 90.0f, 180.0f, 90.0f, 0.0f) * sgn(vehRoll);
+    }
+    else {
+        vehRoll = std::clamp(vehRoll, -horRollLim, horRollLim);
+    }
 
     switch (mount.HorizonLock.PitchMode) {
         case 2:

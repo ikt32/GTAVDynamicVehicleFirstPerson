@@ -10,6 +10,8 @@
 #include <filesystem>
 #include <cctype>
 
+using std::to_underlying;
+
 #define CHECK_LOG_SI_ERROR(result, operation, file) \
     if ((result) < 0) { \
         LOG(ERROR, "[Config] {} Failed to {}, SI_Error [{}]", \
@@ -27,11 +29,11 @@
     }
 
 void SetValue(CSimpleIniA & ini, const std::string& section, const char* key, CConfig::EMountPoint val) {
-    ini.SetLongValue(section.c_str(), key, static_cast<int>(val));
+    ini.SetLongValue(section.c_str(), key, to_underlying(val));
 }
 
 CConfig::EMountPoint GetValue(CSimpleIniA& ini, const std::string& section, const char* key, CConfig::EMountPoint val) {
-    int outVal = ini.GetLongValue(section.c_str(), key, static_cast<int>(val));
+    int outVal = ini.GetLongValue(section.c_str(), key, to_underlying(val));
     if (outVal != 0 && outVal != 1) {
         return CConfig::EMountPoint::Vehicle;
     }

@@ -12,6 +12,8 @@
 #include <inc/natives.h>
 #include <algorithm>
 
+using std::to_underlying;
+
 namespace {
     // Keep in sync with EMountPoint
     std::vector<std::string> mountPointNames{
@@ -166,7 +168,7 @@ std::vector<CScriptMenu<CFPVScript>::CSubmenu> FPV::BuildMenu() {
             }
             CConfig::SCameraSettings& cam = config->Mount[config->CamIndex];
 
-            int mountInt = static_cast<int>(cam.MountPoint);
+            int mountInt = to_underlying(cam.MountPoint);
             if (mbCtx.StringArray("Attach to", mountPointNames, mountInt,
                 { "Mounting to the vehicle is pretty static and predictable.",
                   "Mounting to the driver transmit all their animations." })) {
@@ -689,7 +691,7 @@ std::vector<CScriptMenu<CFPVScript>::CSubmenu> FPV::BuildMenu() {
 
             for (const auto& mat : FPV::GetShakeData().MaterialReactionMap) {
                 std::string matName;
-                auto matIdx = static_cast<int>(mat.first);
+                auto matIdx = to_underlying(mat.first);
                 if (matIdx < sMaterialNames.size()) {
                     matName = sMaterialNames[matIdx];
                 }

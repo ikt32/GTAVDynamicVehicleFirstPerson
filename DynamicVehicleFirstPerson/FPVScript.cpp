@@ -15,6 +15,8 @@
 #include <format>
 #include <map>
 
+using std::to_underlying;
+
 CFPVScript::CFPVScript(const std::shared_ptr<CScriptSettings>& settings,
     const std::shared_ptr<CShakeData>& shakeData,
     std::vector<CConfig>& configs)
@@ -199,8 +201,8 @@ void CFPVScript::update() {
     bool wearingHelmet =
         PED::IS_PED_WEARING_HELMET(playerPed) ||
         PED::IS_CURRENT_HEAD_PROP_A_HELMET(playerPed) ||
-        PED::GET_PED_PROP_INDEX(playerPed, static_cast<int>(ePedPropPosition::AnchorHead)) > -1 ||
-        PED::GET_PED_PROP_INDEX(playerPed, static_cast<int>(ePedPropPosition::AnchorEyes)) > -1;
+        PED::GET_PED_PROP_INDEX(playerPed, to_underlying(ePedPropPosition::AnchorHead)) > -1 ||
+        PED::GET_PED_PROP_INDEX(playerPed, to_underlying(ePedPropPosition::AnchorEyes)) > -1;
 
     if (mSettings->Debug.NearClip.Override) {
         CAM::SET_CAM_NEAR_CLIP(mHandle, mSettings->Debug.NearClip.Distance);
@@ -350,20 +352,20 @@ void CFPVScript::hideHead(bool remove) {
 
     if (!mSettings->Debug.DisableRemoveProps) {
         if (remove) {
-            savedHeadProp = PED::GET_PED_PROP_INDEX(playerPed, static_cast<int>(ePedPropPosition::AnchorHead));
-            savedHeadPropTx = PED::GET_PED_PROP_TEXTURE_INDEX(playerPed, static_cast<int>(ePedPropPosition::AnchorHead));
+            savedHeadProp = PED::GET_PED_PROP_INDEX(playerPed, to_underlying(ePedPropPosition::AnchorHead));
+            savedHeadPropTx = PED::GET_PED_PROP_TEXTURE_INDEX(playerPed, to_underlying(ePedPropPosition::AnchorHead));
 
-            savedEyesProp = PED::GET_PED_PROP_INDEX(playerPed, static_cast<int>(ePedPropPosition::AnchorEyes));
-            savedEyesPropTx = PED::GET_PED_PROP_TEXTURE_INDEX(playerPed, static_cast<int>(ePedPropPosition::AnchorEyes));
+            savedEyesProp = PED::GET_PED_PROP_INDEX(playerPed, to_underlying(ePedPropPosition::AnchorEyes));
+            savedEyesPropTx = PED::GET_PED_PROP_TEXTURE_INDEX(playerPed, to_underlying(ePedPropPosition::AnchorEyes));
 
-            PED::CLEAR_PED_PROP(playerPed, static_cast<int>(ePedPropPosition::AnchorHead));
-            PED::CLEAR_PED_PROP(playerPed, static_cast<int>(ePedPropPosition::AnchorEyes));
+            PED::CLEAR_PED_PROP(playerPed, to_underlying(ePedPropPosition::AnchorHead));
+            PED::CLEAR_PED_PROP(playerPed, to_underlying(ePedPropPosition::AnchorEyes));
         }
         else {
             if (savedHeadProp != -1)
-                PED::SET_PED_PROP_INDEX(playerPed, static_cast<int>(ePedPropPosition::AnchorHead), savedHeadProp, savedHeadPropTx, true);
+                PED::SET_PED_PROP_INDEX(playerPed, to_underlying(ePedPropPosition::AnchorHead), savedHeadProp, savedHeadPropTx, true);
             if (savedEyesProp != -1)
-                PED::SET_PED_PROP_INDEX(playerPed, static_cast<int>(ePedPropPosition::AnchorEyes), savedEyesProp, savedEyesPropTx, true);
+                PED::SET_PED_PROP_INDEX(playerPed, to_underlying(ePedPropPosition::AnchorEyes), savedEyesProp, savedEyesPropTx, true);
         }
     }
 }

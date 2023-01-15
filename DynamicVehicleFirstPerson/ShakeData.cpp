@@ -37,7 +37,7 @@ void CShakeData::Load() {
             float amplitude, frequency;
             auto scanned = sscanf_s(line, "%f|%f", &amplitude, &frequency);
             if (scanned != 2) {
-                LOG(ERROR, "[Shake] Failed to process line: '%s'", line);
+                LOG(ERROR, "[Shake] Failed to process line: '{}'", line);
                 continue;
             }
             MaterialReactionMap.insert({ static_cast<eMaterial>(i), { amplitude, frequency } });

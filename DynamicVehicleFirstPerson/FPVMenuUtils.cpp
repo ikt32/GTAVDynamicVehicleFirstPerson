@@ -135,9 +135,9 @@ std::vector<std::string> FPV::FormatCameraInfo(const CConfig& cfg, int camIndex)
     std::string horizonLock;
     if (cfg.Mount[camIndex].HorizonLock.Lock) {
         switch (cfg.Mount[camIndex].HorizonLock.PitchMode) {
-            case 0: horizonLock = "Yes: Full"; break;
-            case 1: horizonLock = "Yes: Roll only"; break;
-            case 2: horizonLock = "Yes: Dynamic"; break;
+            case 0: horizonLock = "Full"; break;
+            case 1: horizonLock = "Roll only"; break;
+            case 2: horizonLock = "Dynamic"; break;
             default: horizonLock = std::format("Index {} out of range", camIndex);
         }
     }

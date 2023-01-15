@@ -784,7 +784,12 @@ Vector3 CFPVScript::getHorizonLockRotation() {
     auto vehRoll = ENTITY::GET_ENTITY_ROLL(mVehicle);
     float dynamicPitch = 0.0f;
 
-    vehPitch = std::clamp(vehPitch, -horPitchLim, horPitchLim);
+    if (abs(vehPitch) > 90.0f) {
+        vehPitch = map(abs(vehPitch), 90.0f, 180.0f, 90.0f, 0.0f) * sgn(vehPitch);
+    }
+    else {
+        vehPitch = std::clamp(vehPitch, -horPitchLim, horPitchLim);
+    }
 
     if (abs(vehRoll) > 90.0f) {
         vehRoll = map(abs(vehRoll), 90.0f, 180.0f, 90.0f, 0.0f) * sgn(vehRoll);

@@ -310,13 +310,13 @@ std::vector<CScriptMenu<CFPVScript>::CSubmenu> FPV::BuildMenu() {
             }
             CConfig::SMovement& movement = config->Mount[config->CamIndex].Movement;
 
-            mbCtx.FloatOption("Direction multiplier", movement.RotationDirectionMult, 0.0f, 4.0f, 0.01f,
+            mbCtx.FloatOptionCb("Direction multiplier", movement.RotationDirectionMult, 0.0f, 4.0f, 0.01f, GetKbEntryFloat,
                 { "How much the direction of travel affects the camera." });
 
-            mbCtx.FloatOption("Rotation: rotation", movement.RotationRotationMult, 0.0f, 4.0f, 0.01f,
+            mbCtx.FloatOptionCb("Rotation: rotation", movement.RotationRotationMult, 0.0f, 4.0f, 0.01f, GetKbEntryFloat,
                 { "How much the rotation speed affects the camera." });
 
-            mbCtx.FloatOption("Rotation: max angle", movement.RotationMaxAngle, 0.0f, 90.0f, 1.0f,
+            mbCtx.FloatOptionCb("Rotation: max angle", movement.RotationMaxAngle, 0.0f, 90.0f, 1.0f, GetKbEntryFloat,
                 { "To how many degrees camera movement is capped." });
         });
 
@@ -329,27 +329,27 @@ std::vector<CScriptMenu<CFPVScript>::CSubmenu> FPV::BuildMenu() {
             }
             CConfig::SMovement& movement = config->Mount[config->CamIndex].Movement;
 
-            mbCtx.FloatOption("Minimum force", movement.LongDeadzone, 0.0f, 2.0f, 0.01f,
+            mbCtx.FloatOptionCb("Minimum force", movement.LongDeadzone, 0.0f, 2.0f, 0.01f, GetKbEntryFloat,
                 { "How hard the car should accelerate or decelerate for the camera to start moving.",
                   "Unit in Gs." });
 
-            mbCtx.FloatOption("Forward scale", movement.LongForwardMult, 0.0f, 2.0f, 0.01f,
+            mbCtx.FloatOptionCb("Forward scale", movement.LongForwardMult, 0.0f, 2.0f, 0.01f, GetKbEntryFloat,
                 { "How much the camera moves forwards when decelerating.",
                   "A scale of 1.0 makes the camera move 1 meter at 1G deceleration.",
                   "A scale of 0.1 makes the camera move 10 centimeters at 1G deceleration.",
                   "0.0 disables forward movement." });
 
-            mbCtx.FloatOption("Backward scale", movement.LongBackwardMult, 0.0f, 2.0f, 0.01f,
+            mbCtx.FloatOptionCb("Backward scale", movement.LongBackwardMult, 0.0f, 2.0f, 0.01f, GetKbEntryFloat,
                 { "How much the camera moves backwards when accelerating.",
                   "A scale of 1.0 makes the camera move 1 meter at 1G acceleration.",
                   "A scale of 0.1 makes the camera move 10 centimeters at 1G acceleration.",
                   "0.0 disables backward movement." });
 
-            mbCtx.FloatOption("Forward limit", movement.LongForwardLimit, 0.0f, 1.0f, 0.01f,
+            mbCtx.FloatOptionCb("Forward limit", movement.LongForwardLimit, 0.0f, 1.0f, 0.01f, GetKbEntryFloat,
                 { "How much the camera may move forwards during deceleration.",
                   "Unit in meter." });
 
-            mbCtx.FloatOption("Backward limit", movement.LongBackwardLimit, 0.0f, 1.0f, 0.01f,
+            mbCtx.FloatOptionCb("Backward limit", movement.LongBackwardLimit, 0.0f, 1.0f, 0.01f, GetKbEntryFloat,
                 { "How much the camera may move backwards during acceleration.",
                   "Unit in meter." });
 
@@ -385,18 +385,18 @@ std::vector<CScriptMenu<CFPVScript>::CSubmenu> FPV::BuildMenu() {
             }
             CConfig::SMovement& movement = config->Mount[config->CamIndex].Movement;
 
-            mbCtx.FloatOption("Minimum force", movement.LatDeadzone, 0.0f, 2.0f, 0.01f,
+            mbCtx.FloatOptionCb("Minimum force", movement.LatDeadzone, 0.0f, 2.0f, 0.01f, GetKbEntryFloat,
                 { "How hard the car should turn or accelerate sideways for the camera to start moving.",
                   "Unit in Gs." });
 
-            mbCtx.FloatOption("Scale", movement.LatMult, -2.0f, 2.0f, 0.01f,
+            mbCtx.FloatOptionCb("Scale", movement.LatMult, -2.0f, 2.0f, 0.01f, GetKbEntryFloat,
                 { "How much the camera moves left or right.",
                   "A scale of 1.0 makes the camera move 1 meter at 1G.",
                   "A scale of 0.1 makes the camera move 10 centimeters at 1G.",
                   "Negative values make the camera move \"against\" the force.",
                   "0.0 disables lateral movement." });
 
-            mbCtx.FloatOption("Limit", movement.LatLimit, 0.0f, 1.0f, 0.01f,
+            mbCtx.FloatOptionCb("Limit", movement.LatLimit, 0.0f, 1.0f, 0.01f, GetKbEntryFloat,
                 { "How much the camera may move left or right.",
                   "Unit in meter." });
         });
@@ -410,27 +410,27 @@ std::vector<CScriptMenu<CFPVScript>::CSubmenu> FPV::BuildMenu() {
             }
             CConfig::SMovement& movement = config->Mount[config->CamIndex].Movement;
 
-            mbCtx.FloatOption("Minimum force", movement.VertDeadzone, 0.0f, 2.0f, 0.01f,
+            mbCtx.FloatOptionCb("Minimum force", movement.VertDeadzone, 0.0f, 2.0f, 0.01f, GetKbEntryFloat,
                 { "How hard the car goes up or down for the camera to start moving.",
                   "Unit in Gs." });
 
-            mbCtx.FloatOption("Up scale", movement.VertUpMult, 0.0f, 2.0f, 0.01f,
+            mbCtx.FloatOptionCb("Up scale", movement.VertUpMult, 0.0f, 2.0f, 0.01f, GetKbEntryFloat,
                 { "How much the camera moves up when falling.",
                   "A scale of 1.0 makes the camera move 1 meter at 1G.",
                   "A scale of 0.1 makes the camera move 10 centimeters at 1G.",
                   "0.0 disables up movement." });
 
-            mbCtx.FloatOption("Down scale", movement.VertDownMult, 0.0f, 2.0f, 0.01f,
+            mbCtx.FloatOptionCb("Down scale", movement.VertDownMult, 0.0f, 2.0f, 0.01f, GetKbEntryFloat,
                 { "How much the camera moves down when \"pushed down\".",
                   "A scale of 1.0 makes the camera move 1 meter at 1G.",
                   "A scale of 0.1 makes the camera move 10 centimeters at 1G.",
                   "0.0 disables down movement." });
 
-            mbCtx.FloatOption("Up limit", movement.VertUpLimit, 0.0f, 1.0f, 0.01f,
+            mbCtx.FloatOptionCb("Up limit", movement.VertUpLimit, 0.0f, 1.0f, 0.01f, GetKbEntryFloat,
                 { "How much the camera may move up.",
                   "Unit in meter." });
 
-            mbCtx.FloatOption("Down limit", movement.VertDownLimit, 0.0f, 1.0f, 0.01f,
+            mbCtx.FloatOptionCb("Down limit", movement.VertDownLimit, 0.0f, 1.0f, 0.01f, GetKbEntryFloat,
                 { "How much the camera may move down.",
                   "Unit in meter." });
         });

@@ -67,8 +67,8 @@ public:
         bool Enable = false;
 
         // Target speeds for DoF setpoints
-        float TargetSpeedMinDoF = 36.0f; // ~130 kph
-        float TargetSpeedMaxDoF = 72.0f; // ~260 kph
+        float TargetSpeedMinDoF = 0.6f; // ~135 kph if 225 kph top
+        float TargetSpeedMaxDoF = 0.9f; // ~200 kph if 225 kph top
 
         // Target acceleration for DoF setpoint modifiers
         float TargetAccelMinDoF = 5.0f; // 0.5 G

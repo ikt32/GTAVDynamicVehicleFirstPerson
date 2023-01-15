@@ -691,10 +691,15 @@ void CFPVScript::updateDoF(const CConfig::SDoF& dof) {
     float averageAcceleration =
         std::clamp(mAverageAccel, dof.TargetAccelMinDoF, dof.TargetAccelMaxDoF);
 
-    // Use air speed for this one
-    float speed = ENTITY::GET_ENTITY_SPEED(mVehicle);
+    const float vehMaxSpeed = VEHICLE::GET_VEHICLE_ESTIMATED_MAX_SPEED(mVehicle) / 0.75f;
+    const float speed = ENTITY::GET_ENTITY_SPEED(mVehicle);
+    const float speedRatio = speed / vehMaxSpeed;
 
-    float nearDoF1 = mapclamp(speed,
+    if (mSettings->Debug.Enable) {
+        UI::ShowText(0.5f, 0.25f, 0.5f, std::format("Est Max Spd {:.0f} kph", vehMaxSpeed * 3.6f));
+    }
+
+    float nearDoF1 = mapclamp(speedRatio,
         dof.TargetSpeedMinDoF, dof.TargetSpeedMaxDoF,
         dof.NearOutFocusMinSpeedDist, dof.NearOutFocusMaxSpeedDist);
 
@@ -702,7 +707,7 @@ void CFPVScript::updateDoF(const CConfig::SDoF& dof) {
         dof.TargetAccelMinDoF, dof.TargetAccelMaxDoF,
         nearDoF1 * dof.TargetAccelMinDoFMod, nearDoF1 * dof.TargetAccelMaxDoFMod);
 
-    float nearDoF2 = mapclamp(speed,
+    float nearDoF2 = mapclamp(speedRatio,
         dof.TargetSpeedMinDoF, dof.TargetSpeedMaxDoF,
         dof.NearInFocusMinSpeedDist, dof.NearInFocusMaxSpeedDist);
 
@@ -710,7 +715,7 @@ void CFPVScript::updateDoF(const CConfig::SDoF& dof) {
         dof.TargetAccelMinDoF, dof.TargetAccelMaxDoF,
         nearDoF2 * dof.TargetAccelMinDoFMod, nearDoF2 * dof.TargetAccelMaxDoFMod);
 
-    float farDoF1 = mapclamp(speed,
+    float farDoF1 = mapclamp(speedRatio,
         dof.TargetSpeedMinDoF, dof.TargetSpeedMaxDoF,
         dof.FarInFocusMinSpeedDist, dof.FarInFocusMaxSpeedDist);
 
@@ -718,7 +723,7 @@ void CFPVScript::updateDoF(const CConfig::SDoF& dof) {
         dof.TargetAccelMinDoF, dof.TargetAccelMaxDoF,
         farDoF1 / dof.TargetAccelMinDoFMod, farDoF1 / dof.TargetAccelMaxDoFMod);
 
-    float farDoF2 = mapclamp(speed,
+    float farDoF2 = mapclamp(speedRatio,
         dof.TargetSpeedMinDoF, dof.TargetSpeedMaxDoF,
         dof.FarOutFocusMinSpeedDist, dof.FarOutFocusMaxSpeedDist);
 

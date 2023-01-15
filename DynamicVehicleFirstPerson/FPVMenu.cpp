@@ -479,19 +479,42 @@ std::vector<CScriptMenu<CFPVScript>::CSubmenu> FPV::BuildMenu() {
                   "Very High post-processing required! May have significant performance impact.",
                   "All options below can be edited precisely, press <Enter> to enter a number." });
 
+            std::string estTopSpeedTxt;
+            std::string targetSpeedMinTxt;
+            std::string targetSpeedMaxTxt;
+
+            Vehicle vehicle = context.GetVehicle();
+            float estTopSpeed = 0.0f;
+            if (ENTITY::DOES_ENTITY_EXIST(vehicle)) {
+                estTopSpeed = VEHICLE::GET_VEHICLE_ESTIMATED_MAX_SPEED(vehicle) / 0.75f;
+                estTopSpeedTxt = std::format("Current vehicle est. top speed: {:.0f} kph or {:.0f} mph.",
+                    estTopSpeed * 3.6f,
+                    estTopSpeed * 2.23694f);
+
+                targetSpeedMinTxt = std::format("Speed for min DoF: {:.0f} kph, {:.0f} mph.",
+                    estTopSpeed * dof.TargetSpeedMinDoF * 3.6f,
+                    estTopSpeed * dof.TargetSpeedMinDoF * 2.23694f);
+
+                targetSpeedMaxTxt = std::format("Speed for max DoF: {:.0f} kph, {:.0f} mph.",
+                    estTopSpeed * dof.TargetSpeedMaxDoF * 3.6f,
+                    estTopSpeed * dof.TargetSpeedMaxDoF * 2.23694f);
+            }
+            else {
+                estTopSpeedTxt = "No vehicle, top speed estimation unavailable.";
+            }
+
             mbCtx.FloatOptionCb("TargetSpeedMinDoF", dof.TargetSpeedMinDoF,
-                0.0f, 200.0f, 1.0f, GetKbEntryFloat,
-                { "Speed at which unfocusing starts, in m/s.",
-                  std::format("({:.0f} kph, {:.0f} mph)",
-                      dof.TargetSpeedMinDoF * 3.6f,
-                      dof.TargetSpeedMinDoF * 2.23694f) });
+                0.0f, 2.0f, 0.01f, GetKbEntryFloat,
+                { "Speed at which defocusing starts, relative to the vehicles' estimated top speed.",
+                  estTopSpeedTxt,
+                  targetSpeedMinTxt });
 
             mbCtx.FloatOptionCb("TargetSpeedMaxDoF", dof.TargetSpeedMaxDoF,
-                0.0f, 400.0f, 1.0f, GetKbEntryFloat,
-                { "Speed at which unfocusing is largest, in m/s.",
-                  std::format("({:.0f} kph, {:.0f} mph)",
-                      dof.TargetSpeedMaxDoF * 3.6f,
-                      dof.TargetSpeedMaxDoF * 2.23694f) });
+                0.0f, 4.0f, 0.01f, GetKbEntryFloat,
+                { "Speed at which defocusing is largest, relative to the vehicles' estimated top speed.",
+                  "Must be higher than TargetSpeedMinDoF",
+                  estTopSpeedTxt,
+                  targetSpeedMaxTxt });
 
             mbCtx.FloatOptionCb("NearOutFocusMinSpeedDist", dof.NearOutFocusMinSpeedDist,
                 0.0f, 10.0f, 0.01f, GetKbEntryFloat,
@@ -547,13 +570,13 @@ std::vector<CScriptMenu<CFPVScript>::CSubmenu> FPV::BuildMenu() {
 
             mbCtx.FloatOptionCb("TargetAccelMinDoF", dof.TargetAccelMinDoF,
                 0.0f, 200.0f, 0.05f, GetKbEntryFloat,
-                { "Acceleration where unfocusing is reduced, in m/s^2.",
+                { "Acceleration where defocusing is reduced, in m/s^2.",
                   std::format("({:.2f} G)", dof.TargetAccelMinDoF / 9.81f),
                   "Default: 0.5G, to reduce blur when not accelerating or coasting." });
 
             mbCtx.FloatOptionCb("TargetAccelMaxDoF", dof.TargetAccelMaxDoF,
                 0.0f, 200.0f, 0.05f, GetKbEntryFloat,
-                { "Acceleration where unfocusing is increased, in m/s^2.",
+                { "Acceleration where defocusing is increased, in m/s^2.",
                   std::format("({:.2f} G)", dof.TargetAccelMaxDoF / 9.81f),
                   "Default: 1.0G, at which blur (for that speed) is maximized." });
 

@@ -359,6 +359,11 @@ bool CConfig::Write(const std::string& newName, Hash model, std::string plate, E
     SAVE_VAL("Look", "MouseCenterTimeout", Look.MouseCenterTimeout);
     SAVE_VAL("Look", "MouseSensitivity", Look.MouseSensitivity);
 
+    if (Mount.empty()) {
+        LOG(DEBUG, "Saving config without camera, inserting default.");
+        Mount.push_back(SCameraSettings{ .Name = "Default" });
+    }
+
     // [Mount<Name>]
     for (const auto& mount : Mount) {
         const auto& name = mount.Name;

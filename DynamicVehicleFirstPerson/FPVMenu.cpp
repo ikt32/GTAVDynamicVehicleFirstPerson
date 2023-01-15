@@ -126,7 +126,8 @@ std::vector<CScriptMenu<CFPVScript>::CSubmenu> FPV::BuildMenu() {
                     "Changes made within a configuration are saved to that configuration only.",
                     "Multiple configs with the same ID (Vehicle or Vehicle and Plate) are "
                     "not supported, script picks whatever comes first alphabetically." })) {
-                CreateConfig(*context.ActiveConfig(), vehicle);
+                CConfig newConfig;
+                CreateConfig(newConfig, vehicle);
             }
 
             if (FPV::GetConfigs().empty()) {

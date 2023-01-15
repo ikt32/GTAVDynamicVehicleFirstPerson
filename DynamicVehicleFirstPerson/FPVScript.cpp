@@ -844,7 +844,7 @@ Vector3 CFPVScript::getShakeFromSpeed() {
     const float minRateMod = mShakeData->MinRateModSpd;
     const float maxRateMod = mShakeData->MaxRateModSpd;
 
-    const float vehMaxSpeed = VEHICLE::GET_VEHICLE_ESTIMATED_MAX_SPEED(mVehicle);
+    const float vehMaxSpeed = VEHICLE::GET_VEHICLE_ESTIMATED_MAX_SPEED(mVehicle) / 0.75f;
     const float speed = ENTITY::GET_ENTITY_SPEED(mVehicle);
 
     if (mSettings->Debug.Enable) {
@@ -858,8 +858,8 @@ Vector3 CFPVScript::getShakeFromSpeed() {
     // <  50% speed: no shake
     // >  90% speed: full shake
     float amplitude = mapclamp(speed,
-        vehMaxSpeed * 0.5f,
-        vehMaxSpeed * 0.9f,
+        vehMaxSpeed * 0.4f,
+        vehMaxSpeed * 0.7f,
         0.0f,
         amplitudeBase * rpmModifier);
 
@@ -890,7 +890,7 @@ Vector3 CFPVScript::getShakeFromTerrain() {
     const float minRateMod = mShakeData->MinRateModTrn;
     const float maxRateMod = mShakeData->MaxRateModTrn;
 
-    const float vehMaxSpeed = VEHICLE::GET_VEHICLE_ESTIMATED_MAX_SPEED(mVehicle);
+    const float vehMaxSpeed = VEHICLE::GET_VEHICLE_ESTIMATED_MAX_SPEED(mVehicle) / 0.75f;
     const float speed = ENTITY::GET_ENTITY_SPEED(mVehicle);
 
     auto terrainTypes = VExt::GetTireContactMaterials(mVehicle);
@@ -934,7 +934,7 @@ Vector3 CFPVScript::getShakeFromTerrain() {
 
     float amplitude = mapclamp(speed,
         0.0f,
-        vehMaxSpeed * 0.4f,
+        vehMaxSpeed * 0.3f,
         0.0f,
         amplitudeBase * terrainAmplMod);
 

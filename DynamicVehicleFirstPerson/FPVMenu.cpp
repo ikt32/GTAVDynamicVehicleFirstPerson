@@ -289,14 +289,16 @@ std::vector<CScriptMenu<CFPVScript>::CSubmenu> FPV::BuildMenu() {
                 { "How much the camera should shake from vehicle speed.",
                   "The shaking starts at 50% of top speed, and shakes at the specified amplitude at "
                     "80% of the top speed.",
-                  "Set to precisely 0.0 to disable." })) {
+                  "Set to precisely 0.0 to disable.",
+                  "Recommended value for 'On' is 5.0." })) {
                 movement.ShakeSpeed = shakeSpeed / 1000.0f;
             }
 
             float shakeTerrain = movement.ShakeTerrain * 1000.0f;
             if (mbCtx.FloatOptionCb("Terrain shake", shakeTerrain, 0.0f, 100.0f, 0.1f, GetKbEntryFloat,
                 { "How much the camera should shake from rough terrain types.",
-                  "Set to precisely 0.0 to disable." })) {
+                  "Set to precisely 0.0 to disable.",
+                  "Recommended value for 'On' is 7.0." })) {
                 movement.ShakeTerrain = shakeTerrain / 1000.0f;
             }
         });

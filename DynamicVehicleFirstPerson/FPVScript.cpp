@@ -198,17 +198,8 @@ void CFPVScript::update() {
         updateDoF(dof);
     }
 
-    bool wearingHelmet =
-        PED::IS_PED_WEARING_HELMET(playerPed) ||
-        PED::IS_CURRENT_HEAD_PROP_A_HELMET(playerPed) ||
-        PED::GET_PED_PROP_INDEX(playerPed, to_underlying(ePedPropPosition::AnchorHead)) > -1 ||
-        PED::GET_PED_PROP_INDEX(playerPed, to_underlying(ePedPropPosition::AnchorEyes)) > -1;
-
     if (mSettings->Debug.NearClip.Override) {
         CAM::SET_CAM_NEAR_CLIP(mHandle, mSettings->Debug.NearClip.Distance);
-    }
-    else if (wearingHelmet) {
-        CAM::SET_CAM_NEAR_CLIP(mHandle, 0.200f);
     }
     else if (!mHeadRemoved) {
         // FPV driving gameplay is 0.149

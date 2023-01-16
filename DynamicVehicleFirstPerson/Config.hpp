@@ -14,7 +14,7 @@ public:
     struct SLean {
         float CenterDist = 0.25f;
         float ForwardDist = 0.05f;
-        float UpDist = 0.08f;
+        float UpDist = 0.02f;
     };
 
     struct SMovement {
@@ -46,16 +46,16 @@ public:
         float VertDownLimit = 0.06f;
 
         float Roughness = 1.0f;
-        float ShakeSpeed = 0.0f;
-        float ShakeTerrain = 0.0f;
+        float ShakeSpeed = 0.005f;
+        float ShakeTerrain = 0.007f;
     };
 
     struct SHorizonLock {
-        bool Lock = false;
+        bool Lock = true;
         // 0: Lock camera pitch with horizon
         // 1: Lock camera pitch with car
         // 2: Dynamic camera pitch
-        int PitchMode = 0;
+        int PitchMode = 2;
         // 0.01: Quick
         // 1.00: Slow
         float CenterSpeed = 1.5f;

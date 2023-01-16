@@ -207,8 +207,8 @@ void CFPVScript::update() {
         CAM::SET_CAM_NEAR_CLIP(mHandle, 0.175f);
     }
     else {
-        // Same as FPV walking gameplay
-        CAM::SET_CAM_NEAR_CLIP(mHandle, 0.05f);
+        // Walking gameplay near clip is 0.05.
+        CAM::SET_CAM_NEAR_CLIP(mHandle, 0.01f);
     }
     // 10km in city, 15km outside
     CAM::SET_CAM_FAR_CLIP(mHandle, 12500.0f);

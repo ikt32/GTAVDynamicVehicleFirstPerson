@@ -122,8 +122,9 @@ void CFPVScript::update() {
     }
 
     if (!Util::VehicleAvailable(vehicle, playerPed) ||
+        !mSettings->Main.Enable ||
         !mActiveConfig ||
-        !mSettings->Main.Enable) {
+        !mActiveConfig->Enable) {
         Cancel();
         return;
     }

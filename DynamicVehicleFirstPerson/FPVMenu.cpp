@@ -106,16 +106,22 @@ std::vector<CScriptMenu<CFPVScript>::CSubmenu> FPV::BuildMenu() {
 
     submenus.emplace_back("cfg.manage.menu",
         [](NativeMenu::Menu& mbCtx, CFPVScript& context) {
-            mbCtx.Title("Configs");
-            mbCtx.Subtitle("");
+            mbCtx.Title("Config management");
+            CConfig* config = context.ActiveConfig();
+            mbCtx.Subtitle(std::format("Config: {}", config ? config->Name : "None"));
 
             Vehicle vehicle = context.GetVehicle();
+            if (config != nullptr) {
+                mbCtx.BoolOption("Enable current config", config->Enable,
+                    { std::format("Enable or disable the current config ({}).", config->Name),
+                      "Useful if no custom FPV is desired in certain vehicles." });
+            }
             if (!Util::VehicleAvailable(vehicle, PLAYER::PLAYER_PED_ID())) {
                 mbCtx.Option("~c~Create config...",
                     { "This is only available while in a vehicle." });
                 return;
             }
-            else if (context.ActiveConfig() == nullptr) {
+            else if (config == nullptr) {
                 mbCtx.Option("~c~Create config...",
                     { "~r~Base config is null. This should never happen." });
                 return;

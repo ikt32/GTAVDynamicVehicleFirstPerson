@@ -236,11 +236,23 @@ void CFPVScript::update() {
     if (VEHICLE::GET_VEHICLE_MOD(vehicle, eVehicleMod::VehicleModFrame) != -1)
         rollbarOffset = *reinterpret_cast<float*>(pModelInfo + mFpvCamOffsetXOffset + 0x30);
 
-    Vector3 seatCoords = ENTITY::GET_WORLD_POSITION_OF_ENTITY_BONE(
-        vehicle, ENTITY::GET_ENTITY_BONE_INDEX_BY_NAME(
-            vehicle, bikeSeat ? "seat_f" : "seat_dside_f"));
-    Vector3 seatOffset = ENTITY::GET_OFFSET_FROM_ENTITY_GIVEN_WORLD_COORDS(
-        vehicle, seatCoords);
+    int seatBoneIdx = ENTITY::GET_ENTITY_BONE_INDEX_BY_NAME(vehicle,
+        bikeSeat ? "seat_f" : "seat_dside_f");
+
+    Vector3 seatCoords;
+    Vector3 seatOffset;
+
+    if (seatBoneIdx != -1) {
+        seatCoords = ENTITY::GET_WORLD_POSITION_OF_ENTITY_BONE(
+            vehicle, ENTITY::GET_ENTITY_BONE_INDEX_BY_NAME(
+                vehicle, bikeSeat ? "seat_f" : "seat_dside_f"));
+        seatOffset = ENTITY::GET_OFFSET_FROM_ENTITY_GIVEN_WORLD_COORDS(
+            vehicle, seatCoords);
+    }
+    else {
+        seatCoords = ENTITY::GET_ENTITY_COORDS(vehicle, true);
+        seatOffset = {};
+    }
 
     if (bikeSeat) {
         Vector3 headBoneCoord = PED::GET_PED_BONE_COORDS(playerPed, 0x796E, {});

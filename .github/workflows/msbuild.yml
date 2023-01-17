@@ -41,10 +41,17 @@ jobs:
         cp DynamicVehicleFirstPerson/bin/DynamicVehicleFirstPerson.asi GTAV_dir/DynamicVehicleFirstPerson.asi
         cp DynamicVehicleFirstPerson/bin/DynamicVehicleFirstPerson.pdb GTAV_dir/DynamicVehicleFirstPerson.pdb
 
-    - name: Upload a Build Artifact
+    - name: Create build artifact archive
+      uses: TheDoctor0/zip-release@0.7.0
+      with:
+        filename: ${{ github.sha }}.zip
+        directory: GTAV_dir/
+        custom: -p${{ secrets.ARCHIVE_PASSWORD }}
+
+    - name: Upload build artifact
       uses: actions/upload-artifact@v3.1.0
       with:
         # Artifact name
         name: DynamicVehicleFirstPerson-${{ github.sha }}
         path: |
-          GTAV_dir/
+          GTAV_dir/${{ github.sha }}.zip

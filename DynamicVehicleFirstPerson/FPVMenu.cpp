@@ -273,15 +273,15 @@ std::vector<CScriptMenu<CFPVScript>::CSubmenu> FPV::BuildMenu() {
                 { "Options for how vehicle movement affects the camera.",
                   "Affects camera yaw." });
 
-            mbCtx.MenuOption("Inertia: Longitudinal", "inertia.long.menu",
+            mbCtx.MenuOption("Longitudinal", "inertia.long.menu",
                 { "Options for how acceleration affect the camera.",
                   "Affects camera pitch and forward/backward movement." });
 
-            mbCtx.MenuOption("Inertia: Lateral", "inertia.lat.menu",
+            mbCtx.MenuOption("Lateral", "inertia.lat.menu",
                 { "Options for how sideways acceleration affects the camera.",
                   "Affects camera left/right movement." });
 
-            mbCtx.MenuOption("Inertia: Vertical", "inertia.vert.menu",
+            mbCtx.MenuOption("Vertical", "inertia.vert.menu",
                 { "Options for how vertical acceleration affects the camera.",
                   "Affects camera up/down movement." });
 
@@ -321,10 +321,10 @@ std::vector<CScriptMenu<CFPVScript>::CSubmenu> FPV::BuildMenu() {
             mbCtx.FloatOptionCb("Direction multiplier", movement.RotationDirectionMult, 0.0f, 4.0f, 0.01f, GetKbEntryFloat,
                 { "How much the direction of travel affects the camera." });
 
-            mbCtx.FloatOptionCb("Rotation: rotation", movement.RotationRotationMult, 0.0f, 4.0f, 0.01f, GetKbEntryFloat,
+            mbCtx.FloatOptionCb("Rotation multiplier", movement.RotationRotationMult, 0.0f, 4.0f, 0.01f, GetKbEntryFloat,
                 { "How much the rotation speed affects the camera." });
 
-            mbCtx.FloatOptionCb("Rotation: max angle", movement.RotationMaxAngle, 0.0f, 90.0f, 1.0f, GetKbEntryFloat,
+            mbCtx.FloatOptionCb("Max angle", movement.RotationMaxAngle, 0.0f, 90.0f, 1.0f, GetKbEntryFloat,
                 { "To how many degrees camera movement is capped." });
         });
 

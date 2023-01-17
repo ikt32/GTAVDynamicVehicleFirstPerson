@@ -55,6 +55,7 @@ void FPV::scriptInit() {
     shakeData->Load();
     LOG(INFO, "Settings loaded");
 
+    LOG(INFO, "Game version: {}", static_cast<int>(getGameVersion()));
     Memory::Init();
     VehicleExtensions::Init();
     Compatibility::Setup();

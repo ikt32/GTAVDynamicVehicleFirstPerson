@@ -15,13 +15,14 @@ property of the Camera.
 
 Camera functionality:
 
-* Add camera shake from vehicle speed (configurable, disabled by default)
-* Add camera shake from terrain (configurable, disabled by default)
-* Add depth of field effect (Requires Very High PostFX)
+* Add camera shake from vehicle speed (configurable, enabled by default)
+* Add camera shake from terrain (configurable, enabled by default)
+* Add depth of field effect (Requires Very High PostFX, disabled by default)
 * Add vertical and lateral movement in response to physics
 * "Lean" (how far to move the camera while looking back) is now configurable
 * Accessories (helmets, hats, glasses) are now removed when entering FPV and are restored when switching back
 * Fix horizon lock for looking backwards
 * Fix horizon lock jumpy behavior while rolled over
+* Fix vehicles lacking seat bones non-functional vehicle mount
 * Fix FPV visual glitches: Traffic lights, rain particles, etc.
 * Fix FPV audio: Now uses normal FPV audio

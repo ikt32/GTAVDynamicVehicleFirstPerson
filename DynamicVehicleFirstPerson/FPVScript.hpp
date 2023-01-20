@@ -42,10 +42,13 @@ private:
     void updateWheelLook(bool& lookingIntoGlass);
 
     void updateRotationCameraMovement(const CConfig::SMovement& movement);
+
+    float getMovementLerpFactor(const CConfig::SMovement& movement) const;
     void updateLongitudinalCameraMovement(const CConfig::SMovement& movement);
     void updateLateralCameraMovement(const CConfig::SMovement& movement);
     void updateVerticalCameraMovement(const CConfig::SMovement& movement);
     void updatePitchCameraMovement(const CConfig::SMovement& movement);
+
     void updateDoF(const CConfig::SDoF& dof);
 
     Vector3 getLeanOffset(bool lookingIntoGlass) const;

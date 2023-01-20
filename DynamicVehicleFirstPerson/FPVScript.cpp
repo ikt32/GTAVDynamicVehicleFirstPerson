@@ -564,11 +564,15 @@ void CFPVScript::updateRotationCameraMovement(const CConfig::SMovement& movement
         1.0f - pow(0.000001f, MISC::GET_FRAME_TIME()));
 }
 
-void CFPVScript::updateLongitudinalCameraMovement(const CConfig::SMovement& movement) {
+float CFPVScript::getMovementLerpFactor(const CConfig::SMovement& movement) const {
     float baseRoughnessExp = -3.0f;
     float roughnessExp = baseRoughnessExp - movement.Roughness;
     float roughness = pow(10.0f, roughnessExp);
-    float lerpF = 1.0f - pow(roughness, MISC::GET_FRAME_TIME());
+    return 1.0f - pow(roughness, MISC::GET_FRAME_TIME());
+}
+
+void CFPVScript::updateLongitudinalCameraMovement(const CConfig::SMovement& movement) {
+    float lerpF = getMovementLerpFactor(movement);
 
     float gForce = mVehicleData.Acceleration().y / 9.81f;
 
@@ -598,10 +602,7 @@ void CFPVScript::updateLongitudinalCameraMovement(const CConfig::SMovement& move
 }
 
 void CFPVScript::updateLateralCameraMovement(const CConfig::SMovement& movement) {
-    float baseRoughnessExp = -3.0f;
-    float roughnessExp = baseRoughnessExp - movement.Roughness;
-    float roughness = pow(10.0f, roughnessExp);
-    float lerpF = 1.0f - pow(roughness, MISC::GET_FRAME_TIME());
+    float lerpF = getMovementLerpFactor(movement);
 
     auto accelVec = mVehicleData.AccelerationCentripetal();
     float gForce = accelVec.x / 9.8f;
@@ -625,10 +626,7 @@ void CFPVScript::updateLateralCameraMovement(const CConfig::SMovement& movement)
 }
 
 void CFPVScript::updateVerticalCameraMovement(const CConfig::SMovement& movement) {
-    float baseRoughnessExp = -3.0f;
-    float roughnessExp = baseRoughnessExp - movement.Roughness;
-    float roughness = pow(10.0f, roughnessExp);
-    float lerpF = 1.0f - pow(roughness, MISC::GET_FRAME_TIME());
+    float lerpF = getMovementLerpFactor(movement);
 
     auto accelVec = mVehicleData.AccelerationCentripetal();
     float gForce = accelVec.z / 9.8f;
@@ -658,7 +656,7 @@ void CFPVScript::updateVerticalCameraMovement(const CConfig::SMovement& movement
 }
 
 void CFPVScript::updatePitchCameraMovement(const CConfig::SMovement& movement) {
-    float lerpF = 1.0f - pow(0.001f, MISC::GET_FRAME_TIME());
+    float lerpF = getMovementLerpFactor(movement);
 
     float gForce = mVehicleData.AccelerationCentripetal().y / 9.81f;
 

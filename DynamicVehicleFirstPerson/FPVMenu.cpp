@@ -285,7 +285,7 @@ std::vector<CScriptMenu<CFPVScript>::CSubmenu> FPV::BuildMenu() {
                 { "Options for how vertical acceleration affects the camera.",
                   "Affects camera up/down movement." });
 
-            mbCtx.FloatOptionCb("Movement roughness", movement.Roughness, 0.0f, 10.0f, 0.5f, GetKbEntryFloat,
+            mbCtx.FloatOptionCb("Movement roughness", movement.Roughness, -2.90f, 10.0f, 0.10f, GetKbEntryFloat,
                 { "How rough the camera movement is, from inertia effects.",
                   "Larger values increase roughness, causing smaller bumps to be more noticeable.",
                   "Smaller values increase smoothness, but may cause the movement to be less responsive." });

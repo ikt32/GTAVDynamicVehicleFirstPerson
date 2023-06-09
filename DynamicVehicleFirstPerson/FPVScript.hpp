@@ -37,6 +37,7 @@ private:
     void init();
     void hideHead(bool remove);
 
+    float getRearLookAngle(ESeatPosition seatPosition, float lookLeftRight, float maxAngle);
     void updateControllerLook(bool& lookingIntoGlass);
     void updateMouseLook(bool& lookingIntoGlass);
     void updateWheelLook(bool& lookingIntoGlass);

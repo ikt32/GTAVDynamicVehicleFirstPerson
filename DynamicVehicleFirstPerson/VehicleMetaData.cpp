@@ -8,7 +8,7 @@ CVehicleMetaData::CVehicleMetaData(Vehicle vehicle)
         return;
 
     mModel = ENTITY::GET_ENTITY_MODEL(vehicle);
-    mIsRHD = readRHD();
+    mSeatPosition = getSeatPosition();
     mVelocity = ENTITY::GET_ENTITY_SPEED_VECTOR(mVehicle, true);
 }
 
@@ -22,20 +22,37 @@ void CVehicleMetaData::Update() {
     mWorldVelocity = ENTITY::GET_ENTITY_VELOCITY(mVehicle);
 }
 
-bool CVehicleMetaData::readRHD() const {
+ESeatPosition CVehicleMetaData::getSeatPosition() const {
     if (!ENTITY::DOES_ENTITY_EXIST(mVehicle))
-        return false;
+        return ESeatPosition::Center;
 
-    return ENTITY::GET_OFFSET_FROM_ENTITY_GIVEN_WORLD_COORDS(
+    int driverSeatBoneIndex = ENTITY::GET_ENTITY_BONE_INDEX_BY_NAME(mVehicle, "seat_dside_f");
+
+    if (driverSeatBoneIndex == -1)
+        return ESeatPosition::Center;
+
+    // >5% of the vehicle width is considered outside center
+    Vector3 dimMin, dimMax;
+    MISC::GET_MODEL_DIMENSIONS(mModel, &dimMin, &dimMax);
+    float maxCenterDelta = (dimMax.x - dimMin.x) * 0.05f;
+
+    float centerOffset = ENTITY::GET_OFFSET_FROM_ENTITY_GIVEN_WORLD_COORDS(
         mVehicle,
         ENTITY::GET_WORLD_POSITION_OF_ENTITY_BONE(
             mVehicle,
-            ENTITY::GET_ENTITY_BONE_INDEX_BY_NAME(
-                mVehicle,
-                "seat_dside_f"
-            )
+            driverSeatBoneIndex
         )
-    ).x > 0.01f;
+    ).x;
+
+    if (centerOffset > maxCenterDelta) {
+        return ESeatPosition::Right;
+    }
+
+    if (centerOffset < -maxCenterDelta) {
+        return ESeatPosition::Left;
+    }
+
+    return ESeatPosition::Center;
 }
 
 Vector3 CVehicleMetaData::calculateAcceleration() {

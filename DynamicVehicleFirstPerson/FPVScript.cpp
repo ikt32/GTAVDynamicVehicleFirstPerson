@@ -374,16 +374,42 @@ void CFPVScript::hideHead(bool remove) {
     }
 }
 
+// We generally want to look back through the center of the car, but follow the direction we already look into.
+// If centered (motorcycle), look back over right shoulder only if already looking right.
+// Otherwise, look back over left shoulder by default, as we usually drive on the right.
+float CFPVScript::getRearLookAngle(ESeatPosition seatPosition, float lookLeftRight, float maxAngle) {
+    // No pre-existing input: Follow seat position
+    if (abs(lookLeftRight) < 0.05f) {
+        if (seatPosition == ESeatPosition::Left) {
+            return -maxAngle;
+        }
+        else if (seatPosition == ESeatPosition::Right) {
+            return maxAngle;
+        }
+    }
+
+    // Pre-existing input: Follow existing looking direction.
+    // This is also the default for motorcycles/centered seats.
+    if (lookLeftRight >= 0.05f) {
+        return -maxAngle;
+    }
+    else {
+        return maxAngle;
+    }
+}
+
 void CFPVScript::updateControllerLook(bool& lookingIntoGlass) {
     float lookLeftRight = PAD::GET_CONTROL_NORMAL(0, eControl::ControlLookLeftRight);
     float lookUpDown = PAD::GET_CONTROL_NORMAL(0, eControl::ControlLookUpDown);
 
-    if (mVehicleData.IsRHD() && lookLeftRight > 0.01f) {
-        lookingIntoGlass = true;
-    }
-
-    if (!mVehicleData.IsRHD() && lookLeftRight < -0.01f) {
-        lookingIntoGlass = true;
+    auto seatPosition = mVehicleData.GetSeatPosition();
+    if (seatPosition != ESeatPosition::Center) {
+        if (seatPosition == ESeatPosition::Right && lookLeftRight > 0.01f) {
+            lookingIntoGlass = true;
+        }
+        if (seatPosition == ESeatPosition::Left && lookLeftRight < -0.01f) {
+            lookingIntoGlass = true;
+        }
     }
 
     float maxAngle = lookingIntoGlass ? 135.0f : 179.0f;
@@ -397,10 +423,7 @@ void CFPVScript::updateControllerLook(bool& lookingIntoGlass) {
         1.0f - pow(mActiveConfig->Look.LookTime, MISC::GET_FRAME_TIME()));
 
     if (PAD::GET_CONTROL_NORMAL(0, eControl::ControlVehicleLookBehind) != 0.0f) {
-        float lookBackAngle = -179.0f; // Look over right shoulder
-        if (mVehicleData.IsRHD()) {
-            lookBackAngle = 179.0f; // Look over left shoulder
-        }
+        float lookBackAngle = getRearLookAngle(seatPosition, lookLeftRight, maxAngle);
         mRotation.z = lerp(mRotation.z, lookBackAngle,
             1.0f - pow(mActiveConfig->Look.LookTime, MISC::GET_FRAME_TIME()));
     }
@@ -416,15 +439,16 @@ void CFPVScript::updateMouseLook(bool& lookingIntoGlass) {
         PAD::GET_CONTROL_NORMAL(0, eControl::ControlLookLeftRight) * mActiveConfig->Look.MouseSensitivity;
     float lookUpDown =
         PAD::GET_CONTROL_NORMAL(0, eControl::ControlLookUpDown) * mActiveConfig->Look.MouseSensitivity;
-
     bool lookBehind = PAD::GET_CONTROL_NORMAL(0, eControl::ControlVehicleLookBehind) != 0.0f;
 
-    if (mVehicleData.IsRHD() && mLookAcc.x > 0.01f) {
-        lookingIntoGlass = true;
-    }
-
-    if (!mVehicleData.IsRHD() && mLookAcc.x < -0.01f) {
-        lookingIntoGlass = true;
+    auto seatPosition = mVehicleData.GetSeatPosition();
+    if (seatPosition != ESeatPosition::Center) {
+        if (seatPosition == ESeatPosition::Right && mLookAcc.x > 0.01f) {
+            lookingIntoGlass = true;
+        }
+        if (seatPosition == ESeatPosition::Left && mLookAcc.x < -0.01f) {
+            lookingIntoGlass = true;
+        }
     }
 
     float maxAngle = lookingIntoGlass ? 135.0f : 179.0f;
@@ -466,10 +490,7 @@ void CFPVScript::updateMouseLook(bool& lookingIntoGlass) {
 
     // Override any mRotation.z changes while looking back
     if (lookBehind) {
-        float lookBackAngle = -179.0f; // Look over right shoulder
-        if (mVehicleData.IsRHD()) {
-            lookBackAngle = 179.0f; // Look over left shoulder
-        }
+        float lookBackAngle = getRearLookAngle(seatPosition, -mRotation.z, maxAngle);
         mRotation.z = lerp(mRotation.z, lookBackAngle,
             1.0f - pow(mActiveConfig->Look.MouseLookTime, MISC::GET_FRAME_TIME()));
     }
@@ -492,10 +513,11 @@ void CFPVScript::updateWheelLook(bool& lookingIntoGlass) {
     }
 
     if (MT::LookingLeft() && MT::LookingRight() || MT::LookingBack()) {
-        if (mVehicleData.IsRHD() && mMTLookBackRightShoulder) {
+        auto seatPosition = mVehicleData.GetSeatPosition();
+        if (seatPosition == ESeatPosition::Right && mMTLookBackRightShoulder) {
             lookingIntoGlass = true;
         }
-        if (!mVehicleData.IsRHD() && !mMTLookBackRightShoulder) {
+        if (seatPosition == ESeatPosition::Left && !mMTLookBackRightShoulder) {
             lookingIntoGlass = true;
         }
 

@@ -22,6 +22,16 @@ void CVehicleMetaData::Update() {
     mWorldVelocity = ENTITY::GET_ENTITY_VELOCITY(mVehicle);
 }
 
+bool CVehicleMetaData::IsDriverWindowPresent() {
+    if (mSeatPosition == ESeatPosition::Left) {
+        return VEHICLE::IS_VEHICLE_WINDOW_INTACT(mVehicle, 0);
+    }
+    else if (mSeatPosition == ESeatPosition::Right) {
+        return VEHICLE::IS_VEHICLE_WINDOW_INTACT(mVehicle, 1);
+    }
+    return false;
+}
+
 ESeatPosition CVehicleMetaData::getSeatPosition() const {
     if (!ENTITY::DOES_ENTITY_EXIST(mVehicle))
         return ESeatPosition::Center;

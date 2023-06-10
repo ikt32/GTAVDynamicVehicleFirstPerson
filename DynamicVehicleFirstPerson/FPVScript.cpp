@@ -403,7 +403,8 @@ void CFPVScript::updateControllerLook(bool& lookingIntoGlass) {
     float lookUpDown = PAD::GET_CONTROL_NORMAL(0, eControl::ControlLookUpDown);
 
     auto seatPosition = mVehicleData.GetSeatPosition();
-    if (seatPosition != ESeatPosition::Center) {
+    if (seatPosition != ESeatPosition::Center &&
+        mVehicleData.IsDriverWindowPresent()) {
         if (seatPosition == ESeatPosition::Right && lookLeftRight > 0.01f) {
             lookingIntoGlass = true;
         }
@@ -442,7 +443,8 @@ void CFPVScript::updateMouseLook(bool& lookingIntoGlass) {
     bool lookBehind = PAD::GET_CONTROL_NORMAL(0, eControl::ControlVehicleLookBehind) != 0.0f;
 
     auto seatPosition = mVehicleData.GetSeatPosition();
-    if (seatPosition != ESeatPosition::Center) {
+    if (seatPosition != ESeatPosition::Center &&
+        mVehicleData.IsDriverWindowPresent()) {
         if (seatPosition == ESeatPosition::Right && mLookAcc.x > 0.01f) {
             lookingIntoGlass = true;
         }
@@ -514,15 +516,18 @@ void CFPVScript::updateWheelLook(bool& lookingIntoGlass) {
 
     if (MT::LookingLeft() && MT::LookingRight() || MT::LookingBack()) {
         auto seatPosition = mVehicleData.GetSeatPosition();
-        if (seatPosition == ESeatPosition::Right && mMTLookBackRightShoulder) {
-            lookingIntoGlass = true;
-        }
-        if (seatPosition == ESeatPosition::Left && !mMTLookBackRightShoulder) {
-            lookingIntoGlass = true;
+        bool driverWindowPresent = mVehicleData.IsDriverWindowPresent();
+        if (driverWindowPresent) {
+            if (seatPosition == ESeatPosition::Right && mMTLookBackRightShoulder) {
+                lookingIntoGlass = true;
+            }
+            if (seatPosition == ESeatPosition::Left && !mMTLookBackRightShoulder) {
+                lookingIntoGlass = true;
+            }
         }
 
         float maxAngle = lookingIntoGlass ? 135.0f : 179.0f;
-        float lookBackAngle = mMTLookBackRightShoulder ? -1.0f * maxAngle : maxAngle;
+        float lookBackAngle = mMTLookBackRightShoulder ? -maxAngle : maxAngle;
         mRotation.z = lerp(mRotation.z, lookBackAngle,
             1.0f - pow(mActiveConfig->Look.MouseLookTime, MISC::GET_FRAME_TIME()));
     }
@@ -769,10 +774,12 @@ Vector3 CFPVScript::getLeanOffset(bool lookingIntoGlass) const {
 
     const auto& mount = mActiveConfig->Mount[mActiveConfig->CamIndex];
 
+    float leanLimitGlass = lookingIntoGlass ? 0.0f : mount.Lean.CenterDist;
+
     // Left
     if (mRotation.z > 85.0f) {
         leanOffset.x = map(mRotation.z, 85.0f, 180.0f, 0.0f, -mount.Lean.CenterDist);
-        leanOffset.x = std::clamp(leanOffset.x, -mount.Lean.CenterDist, 0.0f);
+        leanOffset.x = std::clamp(leanOffset.x, -mount.Lean.CenterDist, leanLimitGlass);
 
         float frontLean = map(mRotation.z, 85.0f, 180.0f, 0.0f, mount.Lean.ForwardDist);
         frontLean = std::clamp(frontLean, 0.0f, mount.Lean.ForwardDist);
@@ -781,7 +788,7 @@ Vector3 CFPVScript::getLeanOffset(bool lookingIntoGlass) const {
     // Right
     if (mRotation.z < -85.0f) {
         leanOffset.x = map(mRotation.z, -85.0f, -180.0f, 0.0f, mount.Lean.CenterDist);
-        leanOffset.x = std::clamp(leanOffset.x, 0.0f, mount.Lean.CenterDist);
+        leanOffset.x = std::clamp(leanOffset.x, -leanLimitGlass, mount.Lean.CenterDist);
 
         float frontLean = map(mRotation.z, -85.0f, -180.0f, 0.0f, mount.Lean.ForwardDist);
         frontLean = std::clamp(frontLean, 0.0f, mount.Lean.ForwardDist);

@@ -17,6 +17,7 @@ public:
     ESeatPosition GetSeatPosition() { return mSeatPosition; }
     Vector3 Acceleration() { return mAcceleration; }
     Vector3 AccelerationCentripetal() { return mAccelerationCentripetal; }
+    bool IsDriverWindowPresent();
 private:
     ESeatPosition getSeatPosition() const;
     Vector3 calculateAcceleration();

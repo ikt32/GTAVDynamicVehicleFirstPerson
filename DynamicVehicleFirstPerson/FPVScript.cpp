@@ -17,6 +17,11 @@
 
 using std::to_underlying;
 
+namespace {
+    constexpr float sRearAngleFree = 179.0f;
+    constexpr float sRearAngleBlocked = 135.0f;
+}
+
 CFPVScript::CFPVScript(const std::shared_ptr<CScriptSettings>& settings,
     const std::shared_ptr<CShakeData>& shakeData,
     std::vector<CConfig>& configs)
@@ -413,11 +418,11 @@ void CFPVScript::updateControllerLook(bool& lookingIntoGlass) {
         }
     }
 
-    float maxAngle = lookingIntoGlass ? 135.0f : 179.0f;
+    const float maxAngle = lookingIntoGlass ? sRearAngleBlocked : sRearAngleFree;
 
     if (lookingIntoGlass) {
-        if (abs(lookLeftRight * 179.0f) > maxAngle) {
-            lookLeftRight = sgn(lookLeftRight) * (maxAngle / 179.0f);
+        if (abs(lookLeftRight * sRearAngleFree) > maxAngle) {
+            lookLeftRight = sgn(lookLeftRight) * (maxAngle / sRearAngleFree);
         }
     }
     mRotation.x = lerp(mRotation.x, 90.0f * -lookUpDown,
@@ -430,7 +435,7 @@ void CFPVScript::updateControllerLook(bool& lookingIntoGlass) {
     }
     else {
         // Manual look
-        mRotation.z = lerp(mRotation.z, 179.0f * -lookLeftRight,
+        mRotation.z = lerp(mRotation.z, sRearAngleFree * -lookLeftRight,
             1.0f - pow(mActiveConfig->Look.LookTime, MISC::GET_FRAME_TIME()));
     }
 }
@@ -453,7 +458,7 @@ void CFPVScript::updateMouseLook(bool& lookingIntoGlass) {
         }
     }
 
-    float maxAngle = lookingIntoGlass ? 135.0f : 179.0f;
+    const float maxAngle = lookingIntoGlass ? sRearAngleBlocked : sRearAngleFree;
 
     // Re-center on no input
     if (lookLeftRight != 0.0f || lookUpDown != 0.0f) {
@@ -471,12 +476,12 @@ void CFPVScript::updateMouseLook(bool& lookingIntoGlass) {
         mLookAcc.y += lookUpDown;
 
         if (lookingIntoGlass) {
-            if (sgn(lookLeftRight) != sgn(mLookAcc.x) || abs(mRotation.z) + abs(lookLeftRight * 179.0f) < maxAngle) {
+            if (sgn(lookLeftRight) != sgn(mLookAcc.x) || abs(mRotation.z) + abs(lookLeftRight * sRearAngleFree) < maxAngle) {
                 mLookAcc.x += lookLeftRight;
             }
 
-            if (abs(mLookAcc.x * 179.0f) > maxAngle) {
-                mLookAcc.x = sgn(mLookAcc.x) * (maxAngle / 179.0f);
+            if (abs(mLookAcc.x * sRearAngleFree) > maxAngle) {
+                mLookAcc.x = sgn(mLookAcc.x) * (maxAngle / sRearAngleFree);
             }
         }
         else {
@@ -497,7 +502,7 @@ void CFPVScript::updateMouseLook(bool& lookingIntoGlass) {
             1.0f - pow(mActiveConfig->Look.MouseLookTime, MISC::GET_FRAME_TIME()));
     }
     else {
-        mRotation.z = lerp(mRotation.z, 179.0f * -mLookAcc.x,
+        mRotation.z = lerp(mRotation.z, sRearAngleFree * -mLookAcc.x,
             1.0f - pow(mActiveConfig->Look.MouseLookTime, MISC::GET_FRAME_TIME()));
     }
 }
@@ -526,7 +531,7 @@ void CFPVScript::updateWheelLook(bool& lookingIntoGlass) {
             }
         }
 
-        float maxAngle = lookingIntoGlass ? 135.0f : 179.0f;
+        const float maxAngle = lookingIntoGlass ? sRearAngleBlocked : sRearAngleFree;
         float lookBackAngle = mMTLookBackRightShoulder ? -maxAngle : maxAngle;
         mRotation.z = lerp(mRotation.z, lookBackAngle,
             1.0f - pow(mActiveConfig->Look.MouseLookTime, MISC::GET_FRAME_TIME()));

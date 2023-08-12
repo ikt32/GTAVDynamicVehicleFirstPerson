@@ -168,7 +168,10 @@ void CFPVScript::update() {
         init();
 
         CAM::SET_CAM_ACTIVE(mHandle, true);
-        CAM::SET_CAM_IS_INSIDE_VEHICLE(mHandle, true);
+
+        if (!bikeSeat) {
+            CAM::SET_CAM_IS_INSIDE_VEHICLE(mHandle, true);
+        }
         GRAPHICS::SET_PARTICLE_FX_CAM_INSIDE_VEHICLE(true);
         CAM::RENDER_SCRIPT_CAMS(true, false, 0, true, false, 0);
     }

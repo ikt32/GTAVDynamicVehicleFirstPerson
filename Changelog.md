@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.1
+
+* Improve seat location detection for looking back
+* Looking back now consistently looks over the left shoulder for centered seats (motorcycles)
+* Looking back now considers the existing rotation and continues in that direction
+* Looking back now considers window presence, and leans full distance when window is rolled down or broken
+* Disable in-vehicle audio on motorcycles (fixes missing reverb)
+
 ## 1.0.0
 
 Initial release after splitting off from Manual Transmission.
